@@ -23,7 +23,7 @@ export const FeedTabs: React.FC<FeedTabsProps> = ({
   return (
     <div className="space-y-3 mb-4">
       {/* Twitter / Threads style Quick Composer Box */}
-      <div className="rounded-2xl border border-[#262626] bg-[#121212] p-3.5">
+      <div className="rounded-2xl border border-[#eff3f4] bg-white p-3.5 shadow-sm">
         <div className="flex items-center gap-3">
           {userAvatar ? (
             <img
@@ -32,14 +32,14 @@ export const FeedTabs: React.FC<FeedTabsProps> = ({
               className="h-9 w-9 rounded-full object-cover shrink-0"
             />
           ) : (
-            <div className="h-9 w-9 rounded-full bg-neutral-800 flex items-center justify-center shrink-0 text-neutral-400 text-xs font-bold">
+            <div className="h-9 w-9 rounded-full bg-[#eff3f4] flex items-center justify-center shrink-0 text-[#536471] text-xs font-bold">
               TP
             </div>
           )}
 
           <button
             onClick={() => openCreateModal("text")}
-            className="flex-1 rounded-full bg-[#181818] border border-[#262626] px-4 py-2 text-left text-xs sm:text-sm text-[#71767b] hover:text-white transition-colors cursor-pointer"
+            className="flex-1 rounded-full bg-[#f7f9fa] border border-[#eff3f4] px-4 py-2 text-left text-xs sm:text-sm text-[#536471] hover:text-[#0f1419] transition-colors cursor-pointer"
           >
             {activeCommunity !== "all"
               ? `Post in t/${activeCommunity}...`
@@ -49,21 +49,21 @@ export const FeedTabs: React.FC<FeedTabsProps> = ({
           <button
             onClick={() => openCreateModal("image")}
             title="Add photo"
-            className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-neutral-800 text-[#71767b] hover:text-white transition-colors cursor-pointer shrink-0"
+            className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-[#eff3f4] text-[#536471] hover:text-[#0f1419] transition-colors cursor-pointer shrink-0"
           >
             <ImageIcon className="h-5 w-5" />
           </button>
         </div>
       </div>
 
-      {/* Sleek Minimal Sorting Tabs */}
-      <div className="flex items-center gap-2 border-b border-[#262626] pb-2 px-1">
+      {/* Sleek Sorting Tabs */}
+      <div className="flex items-center gap-2 border-b border-[#eff3f4] pb-2 px-1">
         <button
           onClick={() => setSort("hot")}
           className={`flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-semibold transition-colors cursor-pointer ${
             sort === "hot"
-              ? "bg-white text-black"
-              : "text-[#71767b] hover:text-white hover:bg-neutral-900"
+              ? "bg-[#0f1419] text-white"
+              : "text-[#536471] hover:text-[#0f1419] hover:bg-[#eff3f4]"
           }`}
         >
           <Flame className="h-3.5 w-3.5" />
@@ -74,8 +74,8 @@ export const FeedTabs: React.FC<FeedTabsProps> = ({
           onClick={() => setSort("new")}
           className={`flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-semibold transition-colors cursor-pointer ${
             sort === "new"
-              ? "bg-white text-black"
-              : "text-[#71767b] hover:text-white hover:bg-neutral-900"
+              ? "bg-[#0f1419] text-white"
+              : "text-[#536471] hover:text-[#0f1419] hover:bg-[#eff3f4]"
           }`}
         >
           <Clock className="h-3.5 w-3.5" />
@@ -86,8 +86,8 @@ export const FeedTabs: React.FC<FeedTabsProps> = ({
           onClick={() => setSort("top")}
           className={`flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-semibold transition-colors cursor-pointer ${
             sort === "top"
-              ? "bg-white text-black"
-              : "text-[#71767b] hover:text-white hover:bg-neutral-900"
+              ? "bg-[#0f1419] text-white"
+              : "text-[#536471] hover:text-[#0f1419] hover:bg-[#eff3f4]"
           }`}
         >
           <Trophy className="h-3.5 w-3.5" />

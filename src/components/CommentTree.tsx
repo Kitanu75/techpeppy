@@ -128,7 +128,7 @@ export const CommentTree: React.FC<CommentTreeProps> = ({
   };
 
   return (
-    <div className="mt-5 pt-4 border-t border-[#262626]">
+    <div className="mt-5 pt-4 border-t border-[#eff3f4]">
       {/* Top Comment Input */}
       <div className="mb-5">
         <form onSubmit={handleAddTopComment} className="space-y-2">
@@ -137,13 +137,13 @@ export const CommentTree: React.FC<CommentTreeProps> = ({
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             placeholder="Write a comment..."
-            className="w-full rounded-xl border border-[#262626] bg-[#181818] p-3 text-xs sm:text-sm text-white placeholder-[#71767b] focus:border-white focus:outline-none resize-none"
+            className="w-full rounded-xl border border-[#e1e8ed] bg-[#f7f9fa] p-3 text-xs sm:text-sm text-[#0f1419] placeholder-[#8b98a5] focus:border-[#0f1419] focus:bg-white focus:outline-none resize-none"
           />
           <div className="flex justify-end">
             <button
               type="submit"
               disabled={submitting || !commentText.trim()}
-              className="rounded-full bg-white hover:bg-neutral-200 px-4 py-1.5 text-xs font-semibold text-black disabled:opacity-50 transition-colors cursor-pointer"
+              className="rounded-full bg-[#0f1419] hover:bg-[#272c30] px-4 py-1.5 text-xs font-semibold text-white disabled:opacity-50 transition-colors cursor-pointer"
             >
               {submitting ? "Posting..." : "Reply"}
             </button>
@@ -153,17 +153,17 @@ export const CommentTree: React.FC<CommentTreeProps> = ({
 
       {/* Comments List */}
       <div className="space-y-3">
-        <div className="flex items-center gap-2 pb-2 border-b border-[#262626] text-xs font-semibold text-[#71767b]">
+        <div className="flex items-center gap-2 pb-2 border-b border-[#eff3f4] text-xs font-semibold text-[#536471]">
           <MessageSquare className="h-3.5 w-3.5" />
           <span>Comments ({comments.length})</span>
         </div>
 
         {loading ? (
-          <div className="py-4 text-center text-xs text-[#71767b]">
+          <div className="py-4 text-center text-xs text-[#536471]">
             Loading...
           </div>
         ) : comments.length === 0 ? (
-          <div className="py-4 text-center text-xs text-[#71767b]">
+          <div className="py-4 text-center text-xs text-[#536471]">
             No comments yet.
           </div>
         ) : (

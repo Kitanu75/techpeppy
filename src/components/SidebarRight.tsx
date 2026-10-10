@@ -24,10 +24,10 @@ export const SidebarRight: React.FC<SidebarRightProps> = ({
 
   return (
     <aside className="hidden xl:block w-72 shrink-0 pl-4 space-y-4">
-      {/* What's Happening / Trending (Twitter style) */}
-      <div className="rounded-2xl border border-[#262626] bg-[#121212] p-4">
-        <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-          <TrendingUp className="h-4 w-4 text-[#71767b]" />
+      {/* What's Happening / Trending */}
+      <div className="rounded-2xl border border-[#eff3f4] bg-[#f7f9fa] p-4">
+        <h3 className="text-sm font-bold text-[#0f1419] mb-3 flex items-center gap-2">
+          <TrendingUp className="h-4 w-4 text-[#536471]" />
           <span>Trending in Tech</span>
         </h3>
 
@@ -38,18 +38,18 @@ export const SidebarRight: React.FC<SidebarRightProps> = ({
               onClick={() => setActiveCommunity(t.slug)}
               className="w-full text-left group cursor-pointer"
             >
-              <p className="text-[11px] text-[#71767b]">{t.category}</p>
-              <p className="text-xs font-semibold text-white group-hover:underline">
+              <p className="text-[11px] text-[#536471]">{t.category}</p>
+              <p className="text-xs font-semibold text-[#0f1419] group-hover:underline">
                 #{t.tag}
               </p>
-              <p className="text-[10px] text-[#71767b]">{t.count}</p>
+              <p className="text-[10px] text-[#536471]">{t.count}</p>
             </button>
           ))}
         </div>
       </div>
 
       {/* Minimal Footer Links */}
-      <div className="px-3 text-[11px] text-[#71767b] space-y-1">
+      <div className="px-3 text-[11px] text-[#536471] space-y-1">
         <div className="flex gap-2">
           {openAboutModal && (
             <button

@@ -25,15 +25,17 @@ async function ensureSeeded() {
         );
       }
 
-      // Upsert by slug to avoid any duplicate posts
-      for (const post of INITIAL_POSTS) {
-        const { id, ...postDoc } = post;
-        await PostModel.findOneAndUpdate(
-          { slug: post.slug },
-          { $setOnInsert: postDoc },
-          { upsert: true }
-        );
-      }
+      // Clean out any previously injected mock posts from DB
+      const mockSlugs = [
+        "minimalist-dual-monitor-developer-setup",
+        "decoupled-headless-cms-nextjs-15-latency",
+        "local-llm-inference-consumer-gpus-32b-models",
+        "vector-search-pipelines-pgvector-vs-dedicated",
+        "why-mongodb-nextjs-server-components-game-changer",
+        "flagship-camera-sensor-comparison-1-inch-vs-periscope",
+        "techpeppy-community-guidelines-welcome",
+      ];
+      await PostModel.deleteMany({ slug: { $in: mockSlugs } });
     } catch (e) {
       console.warn("DB seed notice:", e);
     }

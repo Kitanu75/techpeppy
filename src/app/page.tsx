@@ -145,8 +145,8 @@ export default function Home() {
   const currentCommunityObj = communities.find((c) => c.slug === activeCommunity);
 
   return (
-    <div className="min-h-screen bg-black text-[#f7f9f9]">
-      {/* Sleek Minimalist Navbar */}
+    <div className="min-h-screen bg-[#f8f9fa] text-[#0f1419]">
+      {/* Light Navbar */}
       <Navbar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -172,7 +172,7 @@ export default function Home() {
       />
 
       {/* Main Container */}
-      <main className="mx-auto max-w-6xl px-3 sm:px-6 py-4">
+      <main className="mx-auto max-w-5xl px-3 sm:px-6 py-4">
         <div className="flex items-start justify-center">
           {/* Left Sidebar */}
           <SidebarLeft
@@ -194,14 +194,14 @@ export default function Home() {
           <section className="flex-1 max-w-2xl min-w-0">
             {/* Active Channel Header (if filtered) */}
             {activeCommunity !== "all" && currentCommunityObj && (
-              <div className="mb-4 rounded-2xl border border-[#262626] bg-[#121212] p-4">
+              <div className="mb-4 rounded-2xl border border-[#eff3f4] bg-white p-4 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h1 className="text-lg font-bold text-white flex items-center gap-2">
+                    <h1 className="text-base font-bold text-[#0f1419] flex items-center gap-2">
                       <span>{currentCommunityObj.icon}</span>
                       <span>{currentCommunityObj.name}</span>
                     </h1>
-                    <p className="text-xs text-[#71767b] mt-0.5">
+                    <p className="text-xs text-[#536471] mt-0.5">
                       t/{currentCommunityObj.slug} • {currentCommunityObj.description}
                     </p>
                   </div>
@@ -215,7 +215,7 @@ export default function Home() {
                         setIsCreateOpen(true);
                       }
                     }}
-                    className="rounded-full bg-white hover:bg-neutral-200 px-3.5 py-1.5 text-xs font-semibold text-black transition-colors cursor-pointer shrink-0"
+                    className="rounded-full bg-[#0f1419] hover:bg-[#272c30] px-3.5 py-1.5 text-xs font-semibold text-white transition-colors cursor-pointer shrink-0"
                   >
                     Post Here
                   </button>
@@ -248,19 +248,19 @@ export default function Home() {
                 {[1, 2, 3].map((n) => (
                   <div
                     key={n}
-                    className="h-36 rounded-2xl border border-[#262626] bg-[#121212] animate-pulse"
+                    className="h-32 rounded-2xl border border-[#eff3f4] bg-white animate-pulse"
                   />
                 ))}
               </div>
             ) : posts.length === 0 ? (
-              <div className="rounded-2xl border border-[#262626] bg-[#121212] p-8 text-center">
-                <p className="text-sm font-semibold text-white mb-1">
+              <div className="rounded-2xl border border-[#eff3f4] bg-white p-8 text-center shadow-sm">
+                <p className="text-sm font-semibold text-[#0f1419] mb-1">
                   No posts yet in this feed
                 </p>
-                <p className="text-xs text-[#71767b] mb-4">
+                <p className="text-xs text-[#536471] mb-4">
                   {searchQuery
                     ? `No matching results for "${searchQuery}".`
-                    : "Be the first to start the discussion or share a setup!"}
+                    : "Be the first to share an architectural tip, discussion, or setup!"}
                 </p>
                 <button
                   onClick={() => {
@@ -271,7 +271,7 @@ export default function Home() {
                       setIsCreateOpen(true);
                     }
                   }}
-                  className="rounded-full bg-white hover:bg-neutral-200 px-4 py-1.5 text-xs font-semibold text-black transition-colors cursor-pointer"
+                  className="rounded-full bg-[#0f1419] hover:bg-[#272c30] px-4 py-1.5 text-xs font-semibold text-white transition-colors cursor-pointer"
                 >
                   Create Post
                 </button>
@@ -293,7 +293,7 @@ export default function Home() {
             )}
           </section>
 
-          {/* Right Sidebar (Trending & Info) */}
+          {/* Right Sidebar */}
           <SidebarRight
             openAboutModal={() => setIsAboutOpen(true)}
             openContactModal={() => setIsContactOpen(true)}

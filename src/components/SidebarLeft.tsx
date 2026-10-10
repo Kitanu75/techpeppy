@@ -25,7 +25,7 @@ export const SidebarLeft: React.FC<SidebarLeftProps> = ({
   ];
 
   return (
-    <aside className="hidden lg:block w-56 shrink-0 pr-4">
+    <aside className="hidden lg:block w-52 shrink-0 pr-4">
       <div className="sticky top-20 space-y-1">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -34,13 +34,13 @@ export const SidebarLeft: React.FC<SidebarLeftProps> = ({
             <button
               key={item.slug}
               onClick={() => setActiveCommunity(item.slug)}
-              className={`flex w-full items-center gap-3 rounded-full px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer ${
+              className={`flex w-full items-center gap-3 rounded-full px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
                 isActive
-                  ? "bg-neutral-900 text-white font-semibold"
-                  : "text-[#71767b] hover:bg-[#16181c] hover:text-white"
+                  ? "bg-[#eff3f4] text-[#0f1419] font-bold"
+                  : "text-[#536471] hover:bg-[#f7f9f9] hover:text-[#0f1419]"
               }`}
             >
-              <Icon className={`h-4 w-4 ${isActive ? "text-white" : "text-[#71767b]"}`} />
+              <Icon className={`h-4 w-4 ${isActive ? "text-[#0f1419]" : "text-[#536471]"}`} />
               <span>{item.label}</span>
             </button>
           );

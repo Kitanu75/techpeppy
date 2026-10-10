@@ -67,23 +67,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="relative w-full max-w-sm rounded-2xl border border-[#262626] bg-[#121212] shadow-2xl p-6 my-8 text-neutral-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 overflow-y-auto">
+      <div className="relative w-full max-w-sm rounded-2xl border border-[#eff3f4] bg-white shadow-xl p-6 my-8 text-[#0f1419]">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 rounded-full p-1.5 text-[#71767b] hover:bg-neutral-800 hover:text-white transition-colors cursor-pointer"
+          className="absolute top-4 right-4 rounded-full p-1.5 text-[#536471] hover:bg-[#f7f9fa] hover:text-[#0f1419] transition-colors cursor-pointer"
         >
           <X className="h-4 w-4" />
         </button>
 
         <div className="text-center mb-5">
-          <h2 className="text-lg font-bold text-white">
+          <h2 className="text-lg font-bold text-[#0f1419]">
             {mode === "login" ? "Sign In to TechPeppy" : "Create an Account"}
           </h2>
         </div>
 
         {/* Tab Toggle */}
-        <div className="flex rounded-xl bg-[#181818] p-1 border border-[#262626] mb-4">
+        <div className="flex rounded-xl bg-[#f7f9fa] p-1 border border-[#eff3f4] mb-4">
           <button
             type="button"
             onClick={() => {
@@ -92,8 +92,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             }}
             className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
               mode === "login"
-                ? "bg-white text-black"
-                : "text-[#71767b] hover:text-white"
+                ? "bg-[#0f1419] text-white"
+                : "text-[#536471] hover:text-[#0f1419]"
             }`}
           >
             Log In
@@ -106,8 +106,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             }}
             className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
               mode === "register"
-                ? "bg-white text-black"
-                : "text-[#71767b] hover:text-white"
+                ? "bg-[#0f1419] text-white"
+                : "text-[#536471] hover:text-[#0f1419]"
             }`}
           >
             Sign Up
@@ -115,7 +115,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </div>
 
         {error && (
-          <div className="mb-3.5 flex items-center gap-2 rounded-xl bg-red-500/10 border border-red-500/20 p-2.5 text-xs text-red-400">
+          <div className="mb-3.5 flex items-center gap-2 rounded-xl bg-red-50 border border-red-200 p-2.5 text-xs text-red-600">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
           </div>
@@ -125,38 +125,38 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           {mode === "register" && (
             <>
               <div>
-                <label className="block text-xs text-[#71767b] mb-1">Full Name</label>
+                <label className="block text-xs font-medium text-[#536471] mb-1">Full Name</label>
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Your Name"
-                  className="w-full rounded-xl border border-[#262626] bg-[#181818] py-2 px-3 text-xs sm:text-sm text-white placeholder-[#71767b] focus:border-white focus:outline-none"
+                  className="w-full rounded-xl border border-[#e1e8ed] bg-[#f7f9fa] py-2 px-3 text-xs sm:text-sm text-[#0f1419] placeholder-[#8b98a5] focus:border-[#0f1419] focus:bg-white focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-[#71767b] mb-1">Username</label>
+                <label className="block text-xs font-medium text-[#536471] mb-1">Username</label>
                 <input
                   type="text"
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="username"
-                  className="w-full rounded-xl border border-[#262626] bg-[#181818] py-2 px-3 text-xs sm:text-sm text-white placeholder-[#71767b] focus:border-white focus:outline-none"
+                  className="w-full rounded-xl border border-[#e1e8ed] bg-[#f7f9fa] py-2 px-3 text-xs sm:text-sm text-[#0f1419] placeholder-[#8b98a5] focus:border-[#0f1419] focus:bg-white focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-[#71767b] mb-1">Email</label>
+                <label className="block text-xs font-medium text-[#536471] mb-1">Email</label>
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@email.com"
-                  className="w-full rounded-xl border border-[#262626] bg-[#181818] py-2 px-3 text-xs sm:text-sm text-white placeholder-[#71767b] focus:border-white focus:outline-none"
+                  className="w-full rounded-xl border border-[#e1e8ed] bg-[#f7f9fa] py-2 px-3 text-xs sm:text-sm text-[#0f1419] placeholder-[#8b98a5] focus:border-[#0f1419] focus:bg-white focus:outline-none"
                 />
               </div>
             </>
@@ -164,45 +164,45 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
           {mode === "login" && (
             <div>
-              <label className="block text-xs text-[#71767b] mb-1">Email or Username</label>
+              <label className="block text-xs font-medium text-[#536471] mb-1">Email or Username</label>
               <input
                 type="text"
                 required
                 value={loginInput}
                 onChange={(e) => setLoginInput(e.target.value)}
                 placeholder="admin@techpeppy.com"
-                className="w-full rounded-xl border border-[#262626] bg-[#181818] py-2 px-3 text-xs sm:text-sm text-white placeholder-[#71767b] focus:border-white focus:outline-none"
+                className="w-full rounded-xl border border-[#e1e8ed] bg-[#f7f9fa] py-2 px-3 text-xs sm:text-sm text-[#0f1419] placeholder-[#8b98a5] focus:border-[#0f1419] focus:bg-white focus:outline-none"
               />
             </div>
           )}
 
           <div>
-            <label className="block text-xs text-[#71767b] mb-1">Password</label>
+            <label className="block text-xs font-medium text-[#536471] mb-1">Password</label>
             <input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full rounded-xl border border-[#262626] bg-[#181818] py-2 px-3 text-xs sm:text-sm text-white placeholder-[#71767b] focus:border-white focus:outline-none"
+              className="w-full rounded-xl border border-[#e1e8ed] bg-[#f7f9fa] py-2 px-3 text-xs sm:text-sm text-[#0f1419] placeholder-[#8b98a5] focus:border-[#0f1419] focus:bg-white focus:outline-none"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-full bg-white hover:bg-neutral-200 py-2 text-xs sm:text-sm font-semibold text-black disabled:opacity-50 transition-colors cursor-pointer mt-3"
+            className="w-full rounded-full bg-[#0f1419] hover:bg-[#272c30] py-2 text-xs sm:text-sm font-semibold text-white disabled:opacity-50 transition-colors cursor-pointer mt-3"
           >
             {loading ? "..." : mode === "login" ? "Sign In" : "Create Account"}
           </button>
         </form>
 
-        <div className="mt-4 pt-3 border-t border-[#262626] flex items-center justify-between text-[11px] text-[#71767b]">
+        <div className="mt-4 pt-3 border-t border-[#eff3f4] flex items-center justify-between text-[11px] text-[#536471]">
           <span>Need admin test?</span>
           <button
             type="button"
             onClick={fillAdminCredentials}
-            className="hover:text-white transition-colors cursor-pointer"
+            className="font-semibold text-[#0f1419] hover:underline transition-colors cursor-pointer"
           >
             Auto-fill Admin
           </button>
