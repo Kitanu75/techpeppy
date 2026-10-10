@@ -40,9 +40,10 @@ export async function connectToDatabase() {
 
   try {
     cached.conn = await cached.promise;
-  } catch (e) {
+  } catch (e: any) {
+    console.error("MongoDB Atlas Connection Warning:", e.message);
     cached.promise = null;
-    throw e;
+    return null;
   }
 
   return cached.conn;
