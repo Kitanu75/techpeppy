@@ -13,6 +13,7 @@ let isSeeded = false;
 
 async function ensureSeeded() {
   if (isSeeded) return;
+  isSeeded = true;
   const db = await connectToDatabase();
   if (db) {
     try {
@@ -23,7 +24,16 @@ async function ensureSeeded() {
           { upsert: true }
         );
       }
-      isSeeded = true;
+
+      // Upsert by slug to avoid any duplicate posts
+      for (const post of INITIAL_POSTS) {
+        const { id, ...postDoc } = post;
+        await PostModel.findOneAndUpdate(
+          { slug: post.slug },
+          { $setOnInsert: postDoc },
+          { upsert: true }
+        );
+      }
     } catch (e) {
       console.warn("DB seed notice:", e);
     }
@@ -75,7 +85,7 @@ export async function getPosts(communitySlug?: string, sort: string = "hot", sea
       }
 
       const docs = await PostModel.find(filter).lean();
-      posts = docs.map((d: any) => ({
+      const mapped = docs.map((d: any) => ({
         id: d._id.toString(),
         title: d.title,
         slug: d.slug,
@@ -93,6 +103,14 @@ export async function getPosts(communitySlug?: string, sort: string = "hot", sea
         isPinned: d.isPinned,
         createdAt: d.createdAt ? new Date(d.createdAt).toISOString() : new Date().toISOString(),
       }));
+
+      // Deduplicate by slug
+      const seenSlugs = new Set<string>();
+      posts = mapped.filter((p) => {
+        if (!p.slug || seenSlugs.has(p.slug)) return false;
+        seenSlugs.add(p.slug);
+        return true;
+      });
     } catch (err) {
       console.warn("Error fetching posts from MongoDB, using in-memory store:", err);
       posts = [...memoryPosts];
@@ -108,7 +126,7 @@ export async function getPosts(communitySlug?: string, sort: string = "hot", sea
         (p) =>
           p.title.toLowerCase().includes(q) ||
           p.content.toLowerCase().includes(q) ||
-          p.tags.some((t) => t.toLowerCase().includes(q))
+          p.tags?.some((t) => t.toLowerCase().includes(q))
       );
     }
   }

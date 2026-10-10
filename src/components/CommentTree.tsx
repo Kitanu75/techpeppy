@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { MessageSquare, Send, PenLine } from "lucide-react";
+import { MessageSquare, Send } from "lucide-react";
 import { CommentType } from "@/lib/models/types";
 import { CommentItem } from "./CommentItem";
 import { SessionUser } from "@/lib/auth";
@@ -128,31 +128,24 @@ export const CommentTree: React.FC<CommentTreeProps> = ({
   };
 
   return (
-    <div className="mt-6 pt-6 border-t border-[#1e293b]">
+    <div className="mt-5 pt-4 border-t border-[#262626]">
       {/* Top Comment Input */}
-      <div className="mb-6">
-        <p className="text-xs text-slate-400 mb-2 flex items-center gap-1.5">
-          <span>Comment as</span>
-          <span className="font-semibold text-slate-200">
-            {currentUser ? `u/${currentUser.username}` : "Guest / Community Dev"}
-          </span>
-        </p>
+      <div className="mb-5">
         <form onSubmit={handleAddTopComment} className="space-y-2">
           <textarea
-            rows={3}
+            rows={2}
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Share technical feedback, benchmark questions, or insights..."
-            className="w-full rounded-2xl border border-[#1e293b] bg-[#111726] p-3.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500 focus:outline-none transition-colors"
+            placeholder="Write a comment..."
+            className="w-full rounded-xl border border-[#262626] bg-[#181818] p-3 text-xs sm:text-sm text-white placeholder-[#71767b] focus:border-white focus:outline-none resize-none"
           />
           <div className="flex justify-end">
             <button
               type="submit"
               disabled={submitting || !commentText.trim()}
-              className="flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-4 py-2 text-xs font-semibold text-white shadow-sm disabled:opacity-50 transition-all cursor-pointer"
+              className="rounded-full bg-white hover:bg-neutral-200 px-4 py-1.5 text-xs font-semibold text-black disabled:opacity-50 transition-colors cursor-pointer"
             >
-              <Send className="h-3.5 w-3.5" />
-              <span>{submitting ? "Posting..." : "Comment"}</span>
+              {submitting ? "Posting..." : "Reply"}
             </button>
           </div>
         </form>
@@ -160,18 +153,18 @@ export const CommentTree: React.FC<CommentTreeProps> = ({
 
       {/* Comments List */}
       <div className="space-y-3">
-        <div className="flex items-center gap-2 pb-2 border-b border-[#1e293b] text-xs font-semibold uppercase tracking-wider text-slate-400">
-          <MessageSquare className="h-4 w-4 text-emerald-400" />
-          <span>Discussion Thread ({comments.length})</span>
+        <div className="flex items-center gap-2 pb-2 border-b border-[#262626] text-xs font-semibold text-[#71767b]">
+          <MessageSquare className="h-3.5 w-3.5" />
+          <span>Comments ({comments.length})</span>
         </div>
 
         {loading ? (
-          <div className="py-6 text-center text-xs text-slate-500">
-            Loading comments...
+          <div className="py-4 text-center text-xs text-[#71767b]">
+            Loading...
           </div>
         ) : comments.length === 0 ? (
-          <div className="py-8 text-center text-xs text-slate-500">
-            No comments yet. Start the technical discussion!
+          <div className="py-4 text-center text-xs text-[#71767b]">
+            No comments yet.
           </div>
         ) : (
           comments.map((comment) => (

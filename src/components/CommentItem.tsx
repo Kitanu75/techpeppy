@@ -26,7 +26,6 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   const [replyText, setReplyText] = useState("");
   const [submittingReply, setSubmittingReply] = useState(false);
 
-  // Optimistic comment vote
   const [userVote, setUserVote] = useState<number>(comment.userVote || 0);
   const [score, setScore] = useState<number>(comment.score);
 
@@ -60,54 +59,50 @@ export const CommentItem: React.FC<CommentItemProps> = ({
     const diffSeconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
     if (diffSeconds < 60) return "just now";
     const diffMinutes = Math.floor(diffSeconds / 60);
-    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+    if (diffMinutes < 60) return `${diffMinutes}m`;
     const diffHours = Math.floor(diffMinutes / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return `${Math.floor(diffHours / 24)}d ago`;
+    if (diffHours < 24) return `${diffHours}h`;
+    return `${Math.floor(diffHours / 24)}d`;
   };
 
   return (
-    <div className={`relative ${level > 0 ? "ml-3 sm:ml-6 mt-3 border-l-2 border-[#1e293b] pl-3 sm:pl-4" : "mt-4"}`}>
+    <div className={`relative ${level > 0 ? "ml-3 sm:ml-5 mt-2.5 border-l border-[#262626] pl-3" : "mt-3"}`}>
       {/* Comment Header */}
-      <div className="flex items-center gap-2 text-xs text-slate-400 mb-1.5">
+      <div className="flex items-center gap-2 text-xs text-[#71767b] mb-1">
         <img
           src={comment.author.avatar || `https://api.dicebear.com/7.x/identicon/svg?seed=${comment.author.username}`}
-          alt={comment.author.name}
-          className="h-5 w-5 rounded-full object-cover ring-1 ring-slate-700"
+          alt=""
+          className="h-4 w-4 rounded-full object-cover"
         />
-        <span className="font-semibold text-slate-200">u/{comment.author.username}</span>
-        {comment.author.karma !== undefined && (
-          <span className="text-[10px] text-emerald-400 font-mono">⚡ {comment.author.karma}</span>
-        )}
+        <span className="font-semibold text-white">u/{comment.author.username}</span>
         <span>•</span>
         <span>{formatTimeAgo(comment.createdAt)}</span>
 
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="ml-auto text-slate-400 hover:text-slate-200 cursor-pointer"
-          title={collapsed ? "Expand thread" : "Collapse thread"}
+          className="ml-auto text-[#71767b] hover:text-white cursor-pointer"
         >
-          {collapsed ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />}
+          {collapsed ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
         </button>
       </div>
 
       {!collapsed && (
         <>
           {/* Comment Body */}
-          <div className="text-xs sm:text-sm text-slate-200 leading-relaxed whitespace-pre-line mb-2">
+          <div className="text-xs sm:text-sm text-neutral-200 leading-relaxed whitespace-pre-line mb-1.5">
             {comment.content}
           </div>
 
           {/* Voting & Actions */}
-          <div className="flex items-center gap-3 text-xs text-slate-400 mb-2">
-            <div className="flex items-center gap-1 rounded-lg bg-[#111726] px-1.5 py-0.5 border border-[#1e293b]">
+          <div className="flex items-center gap-3 text-xs text-[#71767b] mb-1.5">
+            <div className="flex items-center gap-1">
               <button
                 onClick={() => handleVote(1)}
-                className={`p-0.5 hover:text-emerald-400 transition-colors cursor-pointer ${userVote === 1 ? "text-emerald-400" : ""}`}
+                className={`p-0.5 hover:text-white transition-colors cursor-pointer ${userVote === 1 ? "text-white" : ""}`}
               >
-                <ArrowBigUp className={`h-4 w-4 ${userVote === 1 ? "fill-emerald-400" : ""}`} />
+                <ArrowBigUp className={`h-4 w-4 ${userVote === 1 ? "fill-white" : ""}`} />
               </button>
-              <span className={`text-[11px] font-bold font-mono ${userVote === 1 ? "text-emerald-400" : userVote === -1 ? "text-blue-400" : "text-slate-300"}`}>
+              <span className={`text-[11px] font-mono font-bold ${userVote === 1 ? "text-white" : userVote === -1 ? "text-blue-400" : "text-[#71767b]"}`}>
                 {score}
               </span>
               <button
@@ -120,9 +115,9 @@ export const CommentItem: React.FC<CommentItemProps> = ({
 
             <button
               onClick={() => setShowReplyBox(!showReplyBox)}
-              className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-emerald-400 transition-colors cursor-pointer"
+              className="flex items-center gap-1 text-[11px] hover:text-white transition-colors cursor-pointer"
             >
-              <MessageSquare className="h-3.5 w-3.5" />
+              <MessageSquare className="h-3 w-3" />
               <span>Reply</span>
             </button>
           </div>
@@ -134,29 +129,29 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                 rows={2}
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
-                placeholder={`Replying to u/${comment.author.username}...`}
-                className="w-full rounded-xl border border-[#1e293b] bg-[#111726] p-2.5 text-xs text-slate-200 placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
+                placeholder="Write a reply..."
+                className="w-full rounded-xl border border-[#262626] bg-[#181818] p-2 text-xs text-white placeholder-[#71767b] focus:border-white focus:outline-none"
               />
               <div className="flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowReplyBox(false)}
-                  className="rounded-lg px-2.5 py-1 text-[11px] font-medium text-slate-400 hover:bg-[#1e293b] cursor-pointer"
+                  className="rounded-full px-3 py-1 text-xs text-[#71767b] hover:text-white cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submittingReply}
-                  className="rounded-lg bg-emerald-600 px-3 py-1 text-[11px] font-bold text-white hover:bg-emerald-500 disabled:opacity-50 transition-colors cursor-pointer"
+                  className="rounded-full bg-white hover:bg-neutral-200 px-3.5 py-1 text-xs font-semibold text-black transition-colors cursor-pointer disabled:opacity-50"
                 >
-                  {submittingReply ? "Posting..." : "Reply"}
+                  {submittingReply ? "..." : "Reply"}
                 </button>
               </div>
             </form>
           )}
 
-          {/* Recursive Nested Replies */}
+          {/* Nested Replies */}
           {comment.replies && comment.replies.length > 0 && (
             <div className="space-y-1">
               {comment.replies.map((reply) => (

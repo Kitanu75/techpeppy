@@ -13,7 +13,6 @@ import { AboutModal } from "@/components/AboutModal";
 import { ContactModal } from "@/components/ContactModal";
 import { CommunityType, PostType } from "@/lib/models/types";
 import { SessionUser } from "@/lib/auth";
-import { Sparkles, PenLine } from "lucide-react";
 
 export default function Home() {
   const [communities, setCommunities] = useState<CommunityType[]>([]);
@@ -134,22 +133,6 @@ export default function Home() {
     }
   };
 
-  const handleCleanMockData = async () => {
-    if (!confirm("Are you sure you want to permanently clear sample posts and clean the feed?")) return;
-    try {
-      const res = await fetch("/api/admin/clean", { method: "POST" });
-      const data = await res.json();
-      if (data.success) {
-        setPosts([]);
-        alert(data.message || "Sample posts removed successfully!");
-      } else {
-        alert(data.error || "Failed to clean sample data");
-      }
-    } catch (err) {
-      console.error("Clean error:", err);
-    }
-  };
-
   const handleLogout = async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
@@ -162,8 +145,8 @@ export default function Home() {
   const currentCommunityObj = communities.find((c) => c.slug === activeCommunity);
 
   return (
-    <div className="min-h-screen bg-[#0b0f17] text-[#f8fafc]">
-      {/* Top Professional Navbar */}
+    <div className="min-h-screen bg-black text-[#f7f9f9]">
+      {/* Sleek Minimalist Navbar */}
       <Navbar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -184,13 +167,12 @@ export default function Home() {
           setIsAuthOpen(true);
         }}
         onLogout={handleLogout}
-        onCleanMockData={handleCleanMockData}
         openAboutModal={() => setIsAboutOpen(true)}
         openContactModal={() => setIsContactOpen(true)}
       />
 
-      {/* Main Layout Container */}
-      <main className="mx-auto max-w-7xl px-3 sm:px-6 py-5">
+      {/* Main Container */}
+      <main className="mx-auto max-w-6xl px-3 sm:px-6 py-4">
         <div className="flex items-start justify-center">
           {/* Left Sidebar */}
           <SidebarLeft
@@ -209,54 +191,39 @@ export default function Home() {
           />
 
           {/* Central Main Feed */}
-          <section className="flex-1 max-w-3xl min-w-0">
-            {/* Active Community Banner (if filtered) */}
+          <section className="flex-1 max-w-2xl min-w-0">
+            {/* Active Channel Header (if filtered) */}
             {activeCommunity !== "all" && currentCommunityObj && (
-              <div className="mb-4 overflow-hidden rounded-2xl border border-[#1e293b] bg-[#0f172a] shadow-sm">
-                <div
-                  className="h-20 w-full"
-                  style={{
-                    backgroundColor: currentCommunityObj.bannerColor || "#059669",
-                    backgroundImage: "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(0,0,0,0.5) 100%)",
-                  }}
-                />
-                <div className="p-4 sm:p-5 -mt-8 flex items-end justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#141e33] text-2xl border border-[#1e293b] shadow-md">
-                      {currentCommunityObj.icon}
-                    </div>
-                    <div>
-                      <h1 className="text-xl font-extrabold text-white">
-                        {currentCommunityObj.name}
-                      </h1>
-                      <p className="text-xs text-emerald-400 font-semibold font-mono">
-                        t/{currentCommunityObj.slug}
-                      </p>
-                    </div>
+              <div className="mb-4 rounded-2xl border border-[#262626] bg-[#121212] p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-lg font-bold text-white flex items-center gap-2">
+                      <span>{currentCommunityObj.icon}</span>
+                      <span>{currentCommunityObj.name}</span>
+                    </h1>
+                    <p className="text-xs text-[#71767b] mt-0.5">
+                      t/{currentCommunityObj.slug} • {currentCommunityObj.description}
+                    </p>
                   </div>
-
                   <button
                     onClick={() => {
                       if (!user) {
                         setAuthDefaultMode("login");
                         setIsAuthOpen(true);
                       } else {
-                        setCreateDefaultType("image");
+                        setCreateDefaultType("text");
                         setIsCreateOpen(true);
                       }
                     }}
-                    className="rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-500 transition-colors shadow-sm cursor-pointer"
+                    className="rounded-full bg-white hover:bg-neutral-200 px-3.5 py-1.5 text-xs font-semibold text-black transition-colors cursor-pointer shrink-0"
                   >
                     Post Here
                   </button>
                 </div>
-                <div className="px-5 pb-4 text-xs text-slate-300">
-                  {currentCommunityObj.description}
-                </div>
               </div>
             )}
 
-            {/* Feed Tabs & Quick Post Bar */}
+            {/* Quick Post & Filter Bar */}
             <FeedTabs
               sort={sort}
               setSort={setSort}
@@ -275,28 +242,25 @@ export default function Home() {
               userName={user?.name}
             />
 
-            {/* Posts List */}
+            {/* Posts Feed */}
             {loading ? (
               <div className="space-y-3">
                 {[1, 2, 3].map((n) => (
                   <div
                     key={n}
-                    className="h-44 rounded-2xl border border-[#1e293b] bg-[#0f172a] animate-pulse p-4"
+                    className="h-36 rounded-2xl border border-[#262626] bg-[#121212] animate-pulse"
                   />
                 ))}
               </div>
             ) : posts.length === 0 ? (
-              <div className="rounded-2xl border border-[#1e293b] bg-[#0f172a] p-10 text-center shadow-sm">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400 mb-3 border border-emerald-500/20">
-                  <Sparkles className="h-6 w-6" />
-                </div>
-                <h3 className="text-base font-bold text-white mb-1">
-                  No Posts Yet
-                </h3>
-                <p className="text-xs text-slate-400 max-w-sm mx-auto mb-4">
+              <div className="rounded-2xl border border-[#262626] bg-[#121212] p-8 text-center">
+                <p className="text-sm font-semibold text-white mb-1">
+                  No posts yet in this feed
+                </p>
+                <p className="text-xs text-[#71767b] mb-4">
                   {searchQuery
-                    ? `No matching posts for "${searchQuery}". Try different keywords.`
-                    : "Be the first to share an engineering architecture guide, AI insight, or workspace setup!"}
+                    ? `No matching results for "${searchQuery}".`
+                    : "Be the first to start the discussion or share a setup!"}
                 </p>
                 <button
                   onClick={() => {
@@ -307,9 +271,9 @@ export default function Home() {
                       setIsCreateOpen(true);
                     }
                   }}
-                  className="rounded-xl bg-emerald-600 hover:bg-emerald-500 px-4 py-2 text-xs font-bold text-white transition-colors shadow-sm cursor-pointer"
+                  className="rounded-full bg-white hover:bg-neutral-200 px-4 py-1.5 text-xs font-semibold text-black transition-colors cursor-pointer"
                 >
-                  Create First Post
+                  Create Post
                 </button>
               </div>
             ) : (
@@ -329,27 +293,16 @@ export default function Home() {
             )}
           </section>
 
-          {/* Right Sidebar */}
+          {/* Right Sidebar (Trending & Info) */}
           <SidebarRight
-            communities={communities}
-            openCreateModal={() => {
-              if (!user) {
-                setAuthDefaultMode("login");
-                setIsAuthOpen(true);
-              } else {
-                setCreateDefaultType("text");
-                setIsCreateOpen(true);
-              }
-            }}
-            setActiveCommunity={setActiveCommunity}
             openAboutModal={() => setIsAboutOpen(true)}
             openContactModal={() => setIsContactOpen(true)}
-            totalPostsCount={posts.length}
+            setActiveCommunity={setActiveCommunity}
           />
         </div>
       </main>
 
-      {/* Auth Modal (Login / Sign Up / Admin) */}
+      {/* Auth Modal */}
       <AuthModal
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}

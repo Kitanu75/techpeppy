@@ -9,8 +9,6 @@ import {
   Bookmark,
   Pin,
   Check,
-  ExternalLink,
-  Sparkles,
   Trash2,
 } from "lucide-react";
 import { PostType } from "@/lib/models/types";
@@ -35,9 +33,6 @@ export const PostCard: React.FC<PostCardProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
-  // Optimistic vote state
   const [userVote, setUserVote] = useState<number>(post.userVote || 0);
   const [score, setScore] = useState<number>(post.score);
 
@@ -47,7 +42,6 @@ export const PostCard: React.FC<PostCardProps> = ({
     let scoreDelta = 0;
 
     if (userVote === targetValue) {
-      // Toggle off / cancel vote
       newVote = 0 as any;
       scoreDelta = -targetValue;
     } else {
@@ -73,42 +67,38 @@ export const PostCard: React.FC<PostCardProps> = ({
     const diffSeconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
     if (diffSeconds < 60) return "just now";
     const diffMinutes = Math.floor(diffSeconds / 60);
-    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+    if (diffMinutes < 60) return `${diffMinutes}m`;
     const diffHours = Math.floor(diffMinutes / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffHours < 24) return `${diffHours}h`;
     const diffDays = Math.floor(diffHours / 24);
-    return `${diffDays}d ago`;
+    return `${diffDays}d`;
   };
 
   return (
     <article
       onClick={() => onSelectPost(post)}
-      className="group relative flex rounded-2xl border border-[#1e293b] bg-[#0f172a] hover:border-[#334155] transition-all duration-200 cursor-pointer overflow-hidden shadow-sm hover:shadow-md mb-3"
+      className="group relative flex rounded-2xl border border-[#262626] bg-[#121212] hover:border-[#383838] transition-colors cursor-pointer overflow-hidden mb-3"
     >
-      {/* Left Voting Pillar */}
+      {/* Left Minimal Voting Pillar */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex w-11 sm:w-12 shrink-0 flex-col items-center justify-start bg-[#0b0f17] py-3 border-r border-[#1e293b]"
+        className="flex w-10 sm:w-11 shrink-0 flex-col items-center justify-start bg-[#0a0a0a] py-3 border-r border-[#262626]"
       >
         <button
           onClick={(e) => handleVote(e, 1)}
           title="Upvote"
-          className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors vote-up cursor-pointer ${
+          className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors cursor-pointer ${
             userVote === 1
-              ? "text-emerald-400 bg-emerald-500/15"
-              : "text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10"
+              ? "text-white bg-neutral-800"
+              : "text-[#71767b] hover:text-white hover:bg-neutral-900"
           }`}
         >
-          <ArrowBigUp className={`h-6 w-6 ${userVote === 1 ? "fill-emerald-400" : ""}`} />
+          <ArrowBigUp className={`h-5 w-5 ${userVote === 1 ? "fill-white" : ""}`} />
         </button>
 
         <span
-          className={`my-1 text-xs sm:text-sm font-bold font-mono tracking-tight ${
-            userVote === 1
-              ? "text-emerald-400"
-              : userVote === -1
-              ? "text-blue-400"
-              : "text-slate-200"
+          className={`my-1 text-xs font-bold font-mono tracking-tight ${
+            userVote === 1 ? "text-white" : userVote === -1 ? "text-blue-400" : "text-[#71767b]"
           }`}
         >
           {score}
@@ -117,22 +107,22 @@ export const PostCard: React.FC<PostCardProps> = ({
         <button
           onClick={(e) => handleVote(e, -1)}
           title="Downvote"
-          className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors vote-down cursor-pointer ${
+          className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors cursor-pointer ${
             userVote === -1
-              ? "text-blue-400 bg-blue-500/15"
-              : "text-slate-400 hover:text-blue-400 hover:bg-blue-500/10"
+              ? "text-blue-400 bg-neutral-800"
+              : "text-[#71767b] hover:text-blue-400 hover:bg-neutral-900"
           }`}
         >
-          <ArrowBigDown className={`h-6 w-6 ${userVote === -1 ? "fill-blue-400" : ""}`} />
+          <ArrowBigDown className={`h-5 w-5 ${userVote === -1 ? "fill-blue-400" : ""}`} />
         </button>
       </div>
 
-      {/* Main Post Card Body */}
+      {/* Main Content Body */}
       <div className="flex-1 p-3.5 sm:p-4 min-w-0">
         {/* Post Metadata Header */}
-        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mb-2">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-[#71767b] mb-2">
           {post.isPinned && (
-            <span className="flex items-center gap-1 rounded-md bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-400 border border-emerald-500/25">
+            <span className="flex items-center gap-1 text-[11px] font-semibold text-white">
               <Pin className="h-3 w-3" /> Pinned
             </span>
           )}
@@ -142,7 +132,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               e.stopPropagation();
               setActiveCommunity(post.communitySlug);
             }}
-            className="font-bold text-gray-100 hover:text-emerald-400 hover:underline transition-colors"
+            className="font-bold text-white hover:underline transition-colors"
           >
             t/{post.communitySlug}
           </button>
@@ -153,56 +143,42 @@ export const PostCard: React.FC<PostCardProps> = ({
             {post.author.avatar && (
               <img
                 src={post.author.avatar}
-                alt={post.author.name}
+                alt=""
                 className="h-4 w-4 rounded-full object-cover"
               />
             )}
-            <span className="hover:underline">u/{post.author.username}</span>
+            <span>u/{post.author.username}</span>
           </div>
 
           <span>•</span>
-          <span className="text-gray-400">{formatTimeAgo(post.createdAt)}</span>
-
-          {/* Tags */}
-          {post.tags && post.tags.length > 0 && (
-            <div className="hidden sm:flex items-center gap-1 ml-auto">
-              {post.tags.slice(0, 2).map((t, idx) => (
-                <span
-                  key={idx}
-                  className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-300 border border-emerald-500/20"
-                >
-                  #{t}
-                </span>
-              ))}
-            </div>
-          )}
+          <span>{formatTimeAgo(post.createdAt)}</span>
         </div>
 
         {/* Post Title */}
-        <h2 className="text-base sm:text-lg font-bold text-gray-100 leading-snug group-hover:text-emerald-300 transition-colors mb-2.5">
+        <h2 className="text-base font-bold text-white leading-snug group-hover:underline transition-colors mb-2">
           {post.title}
         </h2>
 
         {/* Photo / Image Content */}
         {post.images && post.images.length > 0 && (
-          <div className="my-3 overflow-hidden rounded-xl border border-[#2b3145] bg-[#0c0e14]">
+          <div className="my-2.5 overflow-hidden rounded-xl border border-[#262626] bg-black">
             {post.images.length === 1 ? (
-              <div className="relative max-h-[500px] overflow-hidden flex items-center justify-center bg-black/40">
+              <div className="relative max-h-[460px] overflow-hidden flex items-center justify-center bg-black">
                 <img
                   src={post.images[0]}
-                  alt={post.title}
-                  className="w-full max-h-[480px] object-contain hover:scale-[1.01] transition-transform duration-300"
+                  alt=""
+                  className="w-full max-h-[450px] object-contain"
                   loading="lazy"
                 />
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-1.5 p-1.5">
+              <div className="grid grid-cols-2 gap-1 p-1">
                 {post.images.slice(0, 4).map((img, idx) => (
-                  <div key={idx} className="relative aspect-video overflow-hidden rounded-lg bg-black/50">
+                  <div key={idx} className="relative aspect-video overflow-hidden rounded-lg bg-black">
                     <img
                       src={img}
-                      alt={`${post.title} ${idx + 1}`}
-                      className="h-full w-full object-cover hover:scale-105 transition-transform"
+                      alt=""
+                      className="h-full w-full object-cover"
                       loading="lazy"
                     />
                   </div>
@@ -212,18 +188,18 @@ export const PostCard: React.FC<PostCardProps> = ({
           </div>
         )}
 
-        {/* Text / Markdown Body Content */}
+        {/* Content text preview */}
         {post.content && (
-          <div className="text-xs sm:text-sm text-gray-300 leading-relaxed line-clamp-3 mb-3 whitespace-pre-line font-sans">
+          <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed line-clamp-3 mb-3 whitespace-pre-line">
             {post.content}
-          </div>
+          </p>
         )}
 
-        {/* Footer Actions Bar */}
-        <div className="flex items-center gap-2 sm:gap-4 pt-2 border-t border-[#1f2433] text-xs text-gray-400">
+        {/* Footer Actions */}
+        <div className="flex items-center gap-4 pt-2 border-t border-[#262626] text-xs text-[#71767b]">
           <button
             onClick={() => onSelectPost(post)}
-            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-medium hover:bg-[#202535] hover:text-gray-200 transition-colors"
+            className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer"
           >
             <MessageSquare className="h-4 w-4" />
             <span>{post.commentsCount} Comments</span>
@@ -231,13 +207,10 @@ export const PostCard: React.FC<PostCardProps> = ({
 
           <button
             onClick={handleShare}
-            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-medium hover:bg-[#202535] hover:text-gray-200 transition-colors"
+            className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer"
           >
             {copied ? (
-              <>
-                <Check className="h-4 w-4 text-emerald-400" />
-                <span className="text-emerald-400 font-semibold">Link Copied!</span>
-              </>
+              <span className="text-white font-semibold">Copied!</span>
             ) : (
               <>
                 <Share2 className="h-4 w-4" />
@@ -251,13 +224,11 @@ export const PostCard: React.FC<PostCardProps> = ({
               e.stopPropagation();
               setSaved(!saved);
             }}
-            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-medium transition-colors ${
-              saved
-                ? "text-emerald-400 bg-emerald-500/10"
-                : "hover:bg-[#162238] hover:text-slate-200"
+            className={`flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer ${
+              saved ? "text-white" : ""
             }`}
           >
-            <Bookmark className={`h-4 w-4 ${saved ? "fill-emerald-400" : ""}`} />
+            <Bookmark className={`h-4 w-4 ${saved ? "fill-white" : ""}`} />
             <span>{saved ? "Saved" : "Save"}</span>
           </button>
 
@@ -270,10 +241,9 @@ export const PostCard: React.FC<PostCardProps> = ({
                 }
               }}
               title="Delete post"
-              className="ml-auto flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs text-red-400/80 hover:text-red-300 hover:bg-red-500/15 transition-colors cursor-pointer"
+              className="ml-auto text-red-400 hover:text-red-300 text-xs cursor-pointer"
             >
               <Trash2 className="h-3.5 w-3.5" />
-              <span>Delete</span>
             </button>
           )}
         </div>
