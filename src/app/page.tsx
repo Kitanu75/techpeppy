@@ -8,15 +8,22 @@ import { FeedTabs } from "@/components/FeedTabs";
 import { PostCard } from "@/components/PostCard";
 import { CreatePostModal } from "@/components/CreatePostModal";
 import { PostDetailModal } from "@/components/PostDetailModal";
+import { AuthModal } from "@/components/AuthModal";
 import { CommunityType, PostType } from "@/lib/models/types";
-import { Sparkles, Image as ImageIcon, Flame, Filter, RefreshCw } from "lucide-react";
+import { SessionUser } from "@/lib/auth";
+import { Sparkles, Image as ImageIcon, Flame } from "lucide-react";
 
 export default function Home() {
   const [communities, setCommunities] = useState<CommunityType[]>([]);
   const [posts, setPosts] = useState<PostType[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Filters & State
+  // User Auth State
+  const [user, setUser] = useState<SessionUser | null>(null);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authDefaultMode, setAuthDefaultMode] = useState<"login" | "register">("login");
+
+  // Filters & Search
   const [activeCommunity, setActiveCommunity] = useState<string>("all");
   const [sort, setSort] = useState<string>("hot");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -25,6 +32,22 @@ export default function Home() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [createDefaultType, setCreateDefaultType] = useState<"text" | "image">("text");
   const [selectedPost, setSelectedPost] = useState<PostType | null>(null);
+
+  // Check Current Logged-in User Session on Mount
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const res = await fetch("/api/auth/me");
+        const data = await res.json();
+        if (data.success && data.user) {
+          setUser(data.user);
+        }
+      } catch (err) {
+        console.error("Auth check failed:", err);
+      }
+    }
+    checkAuth();
+  }, []);
 
   // Fetch Communities
   useEffect(() => {
@@ -68,11 +91,17 @@ export default function Home() {
   }, [activeCommunity, sort, searchQuery]);
 
   const handleVote = async (postId: string, value: 1 | -1 | 0) => {
+    if (!user) {
+      setAuthDefaultMode("login");
+      setIsAuthOpen(true);
+      return;
+    }
+
     try {
       await fetch(`/api/posts/${postId}/vote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ value, userId: "user_sandeep" }),
+        body: JSON.stringify({ value, userId: user.id }),
       });
     } catch (err) {
       console.error("Error voting:", err);
@@ -84,20 +113,40 @@ export default function Home() {
     setSelectedPost(newPost);
   };
 
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      setUser(null);
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+  };
+
   const currentCommunityObj = communities.find((c) => c.slug === activeCommunity);
 
   return (
     <div className="min-h-screen bg-[#0d0f15] text-[#ededed]">
-      {/* Navbar */}
+      {/* Navbar with Auth State */}
       <Navbar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         openCreateModal={() => {
-          setCreateDefaultType("text");
-          setIsCreateOpen(true);
+          if (!user) {
+            setAuthDefaultMode("login");
+            setIsAuthOpen(true);
+          } else {
+            setCreateDefaultType("text");
+            setIsCreateOpen(true);
+          }
         }}
         activeCommunity={activeCommunity}
         setActiveCommunity={setActiveCommunity}
+        user={user}
+        openAuthModal={(mode) => {
+          setAuthDefaultMode(mode);
+          setIsAuthOpen(true);
+        }}
+        onLogout={handleLogout}
       />
 
       {/* Main Container */}
@@ -109,8 +158,13 @@ export default function Home() {
             activeCommunity={activeCommunity}
             setActiveCommunity={setActiveCommunity}
             openCreateModal={() => {
-              setCreateDefaultType("text");
-              setIsCreateOpen(true);
+              if (!user) {
+                setAuthDefaultMode("login");
+                setIsAuthOpen(true);
+              } else {
+                setCreateDefaultType("text");
+                setIsCreateOpen(true);
+              }
             }}
           />
 
@@ -143,10 +197,15 @@ export default function Home() {
 
                   <button
                     onClick={() => {
-                      setCreateDefaultType("image");
-                      setIsCreateOpen(true);
+                      if (!user) {
+                        setAuthDefaultMode("login");
+                        setIsAuthOpen(true);
+                      } else {
+                        setCreateDefaultType("image");
+                        setIsCreateOpen(true);
+                      }
                     }}
-                    className="rounded-xl bg-orange-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-orange-700 transition-colors shadow-sm"
+                    className="rounded-xl bg-orange-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-orange-700 transition-colors shadow-sm cursor-pointer"
                   >
                     Post Here
                   </button>
@@ -162,8 +221,13 @@ export default function Home() {
               sort={sort}
               setSort={setSort}
               openCreateModal={(type) => {
-                setCreateDefaultType(type || "text");
-                setIsCreateOpen(true);
+                if (!user) {
+                  setAuthDefaultMode("login");
+                  setIsAuthOpen(true);
+                } else {
+                  setCreateDefaultType(type || "text");
+                  setIsCreateOpen(true);
+                }
               }}
               activeCommunity={activeCommunity}
               communityName={currentCommunityObj?.name}
@@ -185,7 +249,7 @@ export default function Home() {
                   <Flame className="h-6 w-6" />
                 </div>
                 <h3 className="text-base font-bold text-white mb-1">
-                  No Posts Found
+                  No Posts Yet
                 </h3>
                 <p className="text-xs text-gray-400 max-w-sm mx-auto mb-4">
                   {searchQuery
@@ -193,8 +257,15 @@ export default function Home() {
                     : "Be the first to share an inspiring setup photo or tech discussion!"}
                 </p>
                 <button
-                  onClick={() => setIsCreateOpen(true)}
-                  className="rounded-xl bg-orange-600 px-4 py-2 text-xs font-bold text-white hover:bg-orange-700 transition-colors shadow-md"
+                  onClick={() => {
+                    if (!user) {
+                      setAuthDefaultMode("login");
+                      setIsAuthOpen(true);
+                    } else {
+                      setIsCreateOpen(true);
+                    }
+                  }}
+                  className="rounded-xl bg-orange-600 px-4 py-2 text-xs font-bold text-white hover:bg-orange-700 transition-colors shadow-md cursor-pointer"
                 >
                   Create First Post
                 </button>
@@ -218,13 +289,26 @@ export default function Home() {
           <SidebarRight
             communities={communities}
             openCreateModal={() => {
-              setCreateDefaultType("text");
-              setIsCreateOpen(true);
+              if (!user) {
+                setAuthDefaultMode("login");
+                setIsAuthOpen(true);
+              } else {
+                setCreateDefaultType("text");
+                setIsCreateOpen(true);
+              }
             }}
             setActiveCommunity={setActiveCommunity}
           />
         </div>
       </main>
+
+      {/* Auth Modal (Login / Sign Up / Admin) */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        onSuccess={(newUser) => setUser(newUser)}
+        defaultMode={authDefaultMode}
+      />
 
       {/* Create Post Modal */}
       <CreatePostModal

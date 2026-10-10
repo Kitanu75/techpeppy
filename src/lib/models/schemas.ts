@@ -1,5 +1,23 @@
 import mongoose, { Schema, models, model } from "mongoose";
 
+// User Schema (Auth & Profile)
+const UserSchema = new Schema(
+  {
+    name: { type: String, required: true },
+    username: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    password: { type: String, required: true },
+    avatar: {
+      type: String,
+      default: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80",
+    },
+    role: { type: String, enum: ["user", "admin"], default: "user" },
+    karma: { type: Number, default: 10 },
+    bio: { type: String, default: "Tech enthusiast & developer on TechPeppy" },
+  },
+  { timestamps: true }
+);
+
 // Community Schema
 const CommunitySchema = new Schema(
   {
@@ -29,6 +47,7 @@ const PostSchema = new Schema(
       username: { type: String, required: true },
       avatar: { type: String, default: "" },
       karma: { type: Number, default: 0 },
+      role: { type: String, default: "user" },
     },
     score: { type: Number, default: 1, index: true },
     upvotes: { type: Number, default: 1 },
@@ -52,6 +71,7 @@ const CommentSchema = new Schema(
       username: { type: String, required: true },
       avatar: { type: String, default: "" },
       karma: { type: Number, default: 0 },
+      role: { type: String, default: "user" },
     },
     score: { type: Number, default: 1 },
     upvotes: { type: Number, default: 1 },
@@ -72,6 +92,7 @@ const VoteSchema = new Schema(
 );
 VoteSchema.index({ userId: 1, targetId: 1 }, { unique: true });
 
+export const UserModel = models.User || model("User", UserSchema);
 export const CommunityModel = models.Community || model("Community", CommunitySchema);
 export const PostModel = models.Post || model("Post", PostSchema);
 export const CommentModel = models.Comment || model("Comment", CommentSchema);

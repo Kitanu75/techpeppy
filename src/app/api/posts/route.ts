@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPosts, createPost } from "@/lib/data/store";
+import { getCurrentUser } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
@@ -17,6 +18,14 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required to publish a post. Please log in." },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const { title, content, images, postType, communitySlug, tags } = body;
 
@@ -42,10 +51,11 @@ export async function POST(req: NextRequest) {
       postType: postType === "image" ? "image" : "text",
       communitySlug,
       author: {
-        name: "Sandeep Kumar",
-        username: "sandeep_tech",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
-        karma: 3420,
+        id: user.id,
+        name: user.name,
+        username: user.username,
+        avatar: user.avatar,
+        karma: user.karma,
       },
       tags: Array.isArray(tags) ? tags : ["Tech"],
     });
