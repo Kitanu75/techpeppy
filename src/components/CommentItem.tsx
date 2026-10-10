@@ -5,7 +5,6 @@ import {
   ArrowBigUp,
   ArrowBigDown,
   MessageSquare,
-  CornerDownRight,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -68,22 +67,24 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   };
 
   return (
-    <div className={`relative ${level > 0 ? "ml-3 sm:ml-6 mt-3 border-l-2 border-[#262c3e] pl-3 sm:pl-4" : "mt-4"}`}>
+    <div className={`relative ${level > 0 ? "ml-3 sm:ml-6 mt-3 border-l-2 border-[#1e293b] pl-3 sm:pl-4" : "mt-4"}`}>
       {/* Comment Header */}
-      <div className="flex items-center gap-2 text-xs text-gray-400 mb-1.5">
+      <div className="flex items-center gap-2 text-xs text-slate-400 mb-1.5">
         <img
-          src={comment.author.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80"}
+          src={comment.author.avatar || `https://api.dicebear.com/7.x/identicon/svg?seed=${comment.author.username}`}
           alt={comment.author.name}
-          className="h-5 w-5 rounded-full object-cover ring-1 ring-gray-700"
+          className="h-5 w-5 rounded-full object-cover ring-1 ring-slate-700"
         />
-        <span className="font-bold text-gray-200">u/{comment.author.username}</span>
-        <span className="text-[10px] text-orange-400 font-mono">⚡ {comment.author.karma || 50}</span>
+        <span className="font-semibold text-slate-200">u/{comment.author.username}</span>
+        {comment.author.karma !== undefined && (
+          <span className="text-[10px] text-emerald-400 font-mono">⚡ {comment.author.karma}</span>
+        )}
         <span>•</span>
         <span>{formatTimeAgo(comment.createdAt)}</span>
 
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="ml-auto text-gray-400 hover:text-gray-200"
+          className="ml-auto text-slate-400 hover:text-slate-200 cursor-pointer"
           title={collapsed ? "Expand thread" : "Collapse thread"}
         >
           {collapsed ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />}
@@ -93,25 +94,25 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       {!collapsed && (
         <>
           {/* Comment Body */}
-          <div className="text-xs sm:text-sm text-gray-200 leading-relaxed whitespace-pre-line mb-2">
+          <div className="text-xs sm:text-sm text-slate-200 leading-relaxed whitespace-pre-line mb-2">
             {comment.content}
           </div>
 
           {/* Voting & Actions */}
-          <div className="flex items-center gap-3 text-xs text-gray-400 mb-2">
-            <div className="flex items-center gap-1 rounded-lg bg-[#11131a] px-1.5 py-0.5 border border-[#232838]">
+          <div className="flex items-center gap-3 text-xs text-slate-400 mb-2">
+            <div className="flex items-center gap-1 rounded-lg bg-[#111726] px-1.5 py-0.5 border border-[#1e293b]">
               <button
                 onClick={() => handleVote(1)}
-                className={`p-0.5 hover:text-orange-500 ${userVote === 1 ? "text-orange-500" : ""}`}
+                className={`p-0.5 hover:text-emerald-400 transition-colors cursor-pointer ${userVote === 1 ? "text-emerald-400" : ""}`}
               >
-                <ArrowBigUp className={`h-4 w-4 ${userVote === 1 ? "fill-orange-500" : ""}`} />
+                <ArrowBigUp className={`h-4 w-4 ${userVote === 1 ? "fill-emerald-400" : ""}`} />
               </button>
-              <span className={`text-[11px] font-bold font-mono ${userVote === 1 ? "text-orange-500" : userVote === -1 ? "text-blue-400" : "text-gray-300"}`}>
+              <span className={`text-[11px] font-bold font-mono ${userVote === 1 ? "text-emerald-400" : userVote === -1 ? "text-blue-400" : "text-slate-300"}`}>
                 {score}
               </span>
               <button
                 onClick={() => handleVote(-1)}
-                className={`p-0.5 hover:text-blue-400 ${userVote === -1 ? "text-blue-400" : ""}`}
+                className={`p-0.5 hover:text-blue-400 transition-colors cursor-pointer ${userVote === -1 ? "text-blue-400" : ""}`}
               >
                 <ArrowBigDown className={`h-4 w-4 ${userVote === -1 ? "fill-blue-400" : ""}`} />
               </button>
@@ -119,7 +120,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
 
             <button
               onClick={() => setShowReplyBox(!showReplyBox)}
-              className="flex items-center gap-1 text-[11px] font-semibold text-gray-400 hover:text-orange-400 transition-colors"
+              className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-emerald-400 transition-colors cursor-pointer"
             >
               <MessageSquare className="h-3.5 w-3.5" />
               <span>Reply</span>
@@ -134,20 +135,20 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 placeholder={`Replying to u/${comment.author.username}...`}
-                className="w-full rounded-xl border border-[#2b3145] bg-[#11131a] p-2.5 text-xs text-gray-200 placeholder-gray-500 focus:border-orange-500 focus:outline-none"
+                className="w-full rounded-xl border border-[#1e293b] bg-[#111726] p-2.5 text-xs text-slate-200 placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
               />
               <div className="flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowReplyBox(false)}
-                  className="rounded-lg px-2.5 py-1 text-[11px] font-medium text-gray-400 hover:bg-[#1a1e2b]"
+                  className="rounded-lg px-2.5 py-1 text-[11px] font-medium text-slate-400 hover:bg-[#1e293b] cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submittingReply}
-                  className="rounded-lg bg-orange-600 px-3 py-1 text-[11px] font-bold text-white hover:bg-orange-700 disabled:opacity-50"
+                  className="rounded-lg bg-emerald-600 px-3 py-1 text-[11px] font-bold text-white hover:bg-emerald-500 disabled:opacity-50 transition-colors cursor-pointer"
                 >
                   {submittingReply ? "Posting..." : "Reply"}
                 </button>

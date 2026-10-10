@@ -1,15 +1,22 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { MessageSquare, Send, Sparkles } from "lucide-react";
+import { MessageSquare, Send, PenLine } from "lucide-react";
 import { CommentType } from "@/lib/models/types";
 import { CommentItem } from "./CommentItem";
+import { SessionUser } from "@/lib/auth";
 
 interface CommentTreeProps {
   postId: string;
+  currentUser?: SessionUser | null;
+  onRequireAuth?: () => void;
 }
 
-export const CommentTree: React.FC<CommentTreeProps> = ({ postId }) => {
+export const CommentTree: React.FC<CommentTreeProps> = ({
+  postId,
+  currentUser,
+  onRequireAuth,
+}) => {
   const [comments, setComments] = useState<CommentType[]>([]);
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState("");
@@ -37,20 +44,34 @@ export const CommentTree: React.FC<CommentTreeProps> = ({ postId }) => {
     e.preventDefault();
     if (!commentText.trim()) return;
 
+    if (!currentUser && onRequireAuth) {
+      onRequireAuth();
+      return;
+    }
+
     setSubmitting(true);
     try {
+      const authorData = currentUser
+        ? {
+            name: currentUser.name,
+            username: currentUser.username,
+            avatar: currentUser.avatar,
+            karma: currentUser.karma,
+          }
+        : {
+            name: "Community Member",
+            username: "guest_dev",
+            avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=guest_dev",
+            karma: 10,
+          };
+
       const res = await fetch(`/api/posts/${postId}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content: commentText.trim(),
           parentId: null,
-          author: {
-            name: "Sandeep Kumar",
-            username: "sandeep_tech",
-            avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80",
-            karma: 3420,
-          },
+          author: authorData,
         }),
       });
 
@@ -67,19 +88,33 @@ export const CommentTree: React.FC<CommentTreeProps> = ({ postId }) => {
   };
 
   const handleAddReply = async (parentId: string, content: string) => {
+    if (!currentUser && onRequireAuth) {
+      onRequireAuth();
+      return;
+    }
+
     try {
+      const authorData = currentUser
+        ? {
+            name: currentUser.name,
+            username: currentUser.username,
+            avatar: currentUser.avatar,
+            karma: currentUser.karma,
+          }
+        : {
+            name: "Community Member",
+            username: "guest_dev",
+            avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=guest_dev",
+            karma: 10,
+          };
+
       const res = await fetch(`/api/posts/${postId}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content,
           parentId,
-          author: {
-            name: "Sandeep Kumar",
-            username: "sandeep_tech",
-            avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80",
-            karma: 3420,
-          },
+          author: authorData,
         }),
       });
 
@@ -93,26 +128,28 @@ export const CommentTree: React.FC<CommentTreeProps> = ({ postId }) => {
   };
 
   return (
-    <div className="mt-6 pt-6 border-t border-[#232838]">
+    <div className="mt-6 pt-6 border-t border-[#1e293b]">
       {/* Top Comment Input */}
       <div className="mb-6">
-        <p className="text-xs text-gray-400 mb-2 flex items-center gap-1.5">
+        <p className="text-xs text-slate-400 mb-2 flex items-center gap-1.5">
           <span>Comment as</span>
-          <span className="font-bold text-gray-200">u/sandeep_tech</span>
+          <span className="font-semibold text-slate-200">
+            {currentUser ? `u/${currentUser.username}` : "Guest / Community Dev"}
+          </span>
         </p>
         <form onSubmit={handleAddTopComment} className="space-y-2">
           <textarea
             rows={3}
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            placeholder="What are your thoughts on this tech post?"
-            className="w-full rounded-2xl border border-[#2b3145] bg-[#11131a] p-3.5 text-xs sm:text-sm text-gray-100 placeholder-gray-500 focus:border-orange-500 focus:outline-none"
+            placeholder="Share technical feedback, benchmark questions, or insights..."
+            className="w-full rounded-2xl border border-[#1e293b] bg-[#111726] p-3.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500 focus:outline-none transition-colors"
           />
           <div className="flex justify-end">
             <button
               type="submit"
               disabled={submitting || !commentText.trim()}
-              className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#ff4500] to-[#ff6333] px-4 py-2 text-xs font-bold text-white shadow-md hover:from-[#e03d00] hover:to-[#eb5323] disabled:opacity-50 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-4 py-2 text-xs font-semibold text-white shadow-sm disabled:opacity-50 transition-all cursor-pointer"
             >
               <Send className="h-3.5 w-3.5" />
               <span>{submitting ? "Posting..." : "Comment"}</span>
@@ -123,18 +160,18 @@ export const CommentTree: React.FC<CommentTreeProps> = ({ postId }) => {
 
       {/* Comments List */}
       <div className="space-y-3">
-        <div className="flex items-center gap-2 pb-2 border-b border-[#202534] text-xs font-bold uppercase tracking-wider text-gray-400">
-          <MessageSquare className="h-4 w-4 text-orange-400" />
+        <div className="flex items-center gap-2 pb-2 border-b border-[#1e293b] text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <MessageSquare className="h-4 w-4 text-emerald-400" />
           <span>Discussion Thread ({comments.length})</span>
         </div>
 
         {loading ? (
-          <div className="py-6 text-center text-xs text-gray-500">
+          <div className="py-6 text-center text-xs text-slate-500">
             Loading comments...
           </div>
         ) : comments.length === 0 ? (
-          <div className="py-8 text-center text-xs text-gray-500">
-            No comments yet. Be the first to start the discussion!
+          <div className="py-8 text-center text-xs text-slate-500">
+            No comments yet. Start the technical discussion!
           </div>
         ) : (
           comments.map((comment) => (

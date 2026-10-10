@@ -83,32 +83,32 @@ export const PostCard: React.FC<PostCardProps> = ({
   return (
     <article
       onClick={() => onSelectPost(post)}
-      className="group relative flex rounded-2xl border border-[#232838] bg-[#151822] hover:border-[#38425d] transition-all duration-200 cursor-pointer overflow-hidden shadow-sm hover:shadow-md mb-3"
+      className="group relative flex rounded-2xl border border-[#1e293b] bg-[#0f172a] hover:border-[#334155] transition-all duration-200 cursor-pointer overflow-hidden shadow-sm hover:shadow-md mb-3"
     >
-      {/* Left Voting Pillar (Reddit Signature) */}
+      {/* Left Voting Pillar */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex w-11 sm:w-12 shrink-0 flex-col items-center justify-start bg-[#11131a] py-3 border-r border-[#1e2331]"
+        className="flex w-11 sm:w-12 shrink-0 flex-col items-center justify-start bg-[#0b0f17] py-3 border-r border-[#1e293b]"
       >
         <button
           onClick={(e) => handleVote(e, 1)}
           title="Upvote"
-          className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors vote-up ${
+          className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors vote-up cursor-pointer ${
             userVote === 1
-              ? "text-orange-500 bg-orange-500/15"
-              : "text-gray-400 hover:text-orange-500"
+              ? "text-emerald-400 bg-emerald-500/15"
+              : "text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10"
           }`}
         >
-          <ArrowBigUp className={`h-6 w-6 ${userVote === 1 ? "fill-orange-500" : ""}`} />
+          <ArrowBigUp className={`h-6 w-6 ${userVote === 1 ? "fill-emerald-400" : ""}`} />
         </button>
 
         <span
           className={`my-1 text-xs sm:text-sm font-bold font-mono tracking-tight ${
             userVote === 1
-              ? "text-orange-500"
+              ? "text-emerald-400"
               : userVote === -1
               ? "text-blue-400"
-              : "text-gray-200"
+              : "text-slate-200"
           }`}
         >
           {score}
@@ -117,10 +117,10 @@ export const PostCard: React.FC<PostCardProps> = ({
         <button
           onClick={(e) => handleVote(e, -1)}
           title="Downvote"
-          className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors vote-down ${
+          className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors vote-down cursor-pointer ${
             userVote === -1
               ? "text-blue-400 bg-blue-500/15"
-              : "text-gray-400 hover:text-blue-400"
+              : "text-slate-400 hover:text-blue-400 hover:bg-blue-500/10"
           }`}
         >
           <ArrowBigDown className={`h-6 w-6 ${userVote === -1 ? "fill-blue-400" : ""}`} />
@@ -130,7 +130,7 @@ export const PostCard: React.FC<PostCardProps> = ({
       {/* Main Post Card Body */}
       <div className="flex-1 p-3.5 sm:p-4 min-w-0">
         {/* Post Metadata Header */}
-        <div className="flex flex-wrap items-center gap-2 text-xs text-gray-400 mb-2">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mb-2">
           {post.isPinned && (
             <span className="flex items-center gap-1 rounded-md bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-400 border border-emerald-500/25">
               <Pin className="h-3 w-3" /> Pinned
@@ -142,7 +142,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               e.stopPropagation();
               setActiveCommunity(post.communitySlug);
             }}
-            className="font-bold text-gray-100 hover:text-orange-400 hover:underline transition-colors"
+            className="font-bold text-gray-100 hover:text-emerald-400 hover:underline transition-colors"
           >
             t/{post.communitySlug}
           </button>
@@ -169,7 +169,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               {post.tags.slice(0, 2).map((t, idx) => (
                 <span
                   key={idx}
-                  className="rounded-full bg-[#202534] px-2 py-0.5 text-[10px] font-medium text-gray-300"
+                  className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-300 border border-emerald-500/20"
                 >
                   #{t}
                 </span>
@@ -179,7 +179,7 @@ export const PostCard: React.FC<PostCardProps> = ({
         </div>
 
         {/* Post Title */}
-        <h2 className="text-base sm:text-lg font-bold text-gray-100 leading-snug group-hover:text-orange-300 transition-colors mb-2.5">
+        <h2 className="text-base sm:text-lg font-bold text-gray-100 leading-snug group-hover:text-emerald-300 transition-colors mb-2.5">
           {post.title}
         </h2>
 
@@ -253,11 +253,11 @@ export const PostCard: React.FC<PostCardProps> = ({
             }}
             className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-medium transition-colors ${
               saved
-                ? "text-orange-400 bg-orange-500/10"
-                : "hover:bg-[#202535] hover:text-gray-200"
+                ? "text-emerald-400 bg-emerald-500/10"
+                : "hover:bg-[#162238] hover:text-slate-200"
             }`}
           >
-            <Bookmark className={`h-4 w-4 ${saved ? "fill-orange-400" : ""}`} />
+            <Bookmark className={`h-4 w-4 ${saved ? "fill-emerald-400" : ""}`} />
             <span>{saved ? "Saved" : "Save"}</span>
           </button>
 

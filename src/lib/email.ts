@@ -53,23 +53,23 @@ export async function sendWelcomeEmail(toEmail: string, username: string) {
     to: toEmail,
     subject: "Welcome to TechPeppy — Where Developers & Creators Connect!",
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0f1117; color: #f3f4f6; padding: 24px; border-radius: 12px;">
-        <h1 style="color: #ff4500; margin-bottom: 8px;">Welcome to TechPeppy, u/${username}! 🔥</h1>
-        <p style="font-size: 14px; line-height: 1.6; color: #d1d5db;">
-          We're excited to have you in our tech community. You can now:
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background: #0b0f17; color: #f8fafc; padding: 28px; border-radius: 12px; border: 1px solid #1e293b;">
+        <h1 style="color: #10b981; margin-bottom: 8px; font-size: 22px;">Welcome to TechPeppy, u/${username}!</h1>
+        <p style="font-size: 14px; line-height: 1.6; color: #cbd5e1;">
+          We're excited to have you in our engineering community. You can now:
         </p>
-        <ul style="font-size: 14px; line-height: 1.8; color: #9ca3af;">
-          <li>📸 Share photos of your desk setups & hardware gear</li>
-          <li>📝 Write tech articles, reviews, and questions</li>
-          <li>⚡ Upvote posts and earn community Karma points</li>
+        <ul style="font-size: 14px; line-height: 1.8; color: #94a3b8;">
+          <li>📝 Share engineering insights, architecture guides, and benchmarks</li>
+          <li>📸 Post workspace setups and hardware gear</li>
+          <li>⚡ Upvote technical posts and participate in discussion threads</li>
         </ul>
         <p style="margin-top: 24px;">
-          <a href="https://techpeppy.com" style="background: #ff4500; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
-            Visit TechPeppy.com
+          <a href="https://techpeppy.com" style="background: #059669; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
+            Explore TechPeppy
           </a>
         </p>
-        <hr style="border: 0; border-top: 1px solid #232838; margin: 24px 0;" />
-        <p style="font-size: 11px; color: #6b7280;">TechPeppy.com • Support: admin@techpeppy.com</p>
+        <hr style="border: 0; border-top: 1px solid #1e293b; margin: 24px 0;" />
+        <p style="font-size: 11px; color: #64748b;">TechPeppy.com • Software & AI Systems • admin@techpeppy.com</p>
       </div>
     `,
   });

@@ -113,15 +113,15 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="relative w-full max-w-2xl rounded-2xl border border-[#2c3347] bg-[#161924] shadow-2xl p-5 sm:p-6 my-8">
+      <div className="relative w-full max-w-2xl rounded-2xl border border-[#1e293b] bg-[#0f172a] shadow-2xl p-5 sm:p-6 my-8 text-slate-100">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-[#252b3d] mb-4">
+        <div className="flex items-center justify-between pb-4 border-b border-[#1e293b] mb-4">
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <span>Create a Post on TechPeppy</span>
+            <span>Publish on TechPeppy</span>
           </h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-gray-400 hover:bg-[#202534] hover:text-white transition-colors"
+            className="rounded-lg p-1 text-slate-400 hover:bg-[#1e293b] hover:text-white transition-colors cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
@@ -136,13 +136,13 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
 
         {/* Community Selector */}
         <div className="mb-4">
-          <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
-            Select Community
+          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+            Select Topic
           </label>
           <select
             value={selectedCommunity}
             onChange={(e) => setSelectedCommunity(e.target.value)}
-            className="w-full rounded-xl border border-[#2b3145] bg-[#1a1e2b] px-3.5 py-2 text-sm text-gray-200 focus:border-orange-500 focus:outline-none"
+            className="w-full rounded-xl border border-[#1e293b] bg-[#141e33] px-3.5 py-2 text-xs sm:text-sm text-slate-200 focus:border-emerald-500 focus:outline-none cursor-pointer"
           >
             {communities.map((c) => (
               <option key={c.slug} value={c.slug}>
@@ -153,54 +153,54 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
         </div>
 
         {/* Post Type Tabs */}
-        <div className="flex rounded-xl bg-[#11131a] p-1 border border-[#232838] mb-4">
+        <div className="flex rounded-xl bg-[#0b0f17] p-1 border border-[#1e293b] mb-4">
           <button
             type="button"
             onClick={() => setPostType("text")}
-            className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-2 text-xs sm:text-sm font-semibold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-2 text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
               postType === "text"
-                ? "bg-[#202535] text-white shadow-sm border border-[#30384f]"
-                : "text-gray-400 hover:text-gray-200"
+                ? "bg-[#141e33] text-emerald-400 shadow-sm border border-emerald-500/20"
+                : "text-slate-400 hover:text-slate-200"
             }`}
           >
-            <FileText className="h-4 w-4 text-orange-400" />
-            <span>📝 Text / Discussion</span>
+            <FileText className="h-4 w-4 text-emerald-400" />
+            <span>📝 Engineering Discussion</span>
           </button>
 
           <button
             type="button"
             onClick={() => setPostType("image")}
-            className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-2 text-xs sm:text-sm font-semibold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-2 text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
               postType === "image"
-                ? "bg-[#202535] text-white shadow-sm border border-[#30384f]"
-                : "text-gray-400 hover:text-gray-200"
+                ? "bg-[#141e33] text-teal-400 shadow-sm border border-teal-500/20"
+                : "text-slate-400 hover:text-slate-200"
             }`}
           >
-            <ImageIcon className="h-4 w-4 text-purple-400" />
-            <span>📸 Photos & Images</span>
+            <ImageIcon className="h-4 w-4 text-teal-400" />
+            <span>📸 Workstation & Hardware Photos</span>
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Post Title */}
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1">
-              Title <span className="text-orange-500">*</span>
+            <label className="block text-xs font-medium text-slate-400 mb-1">
+              Title <span className="text-emerald-400">*</span>
             </label>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Give your tech post an interesting title..."
-              className="w-full rounded-xl border border-[#2b3145] bg-[#1a1e2b] px-3.5 py-2.5 text-sm text-gray-100 placeholder-gray-500 focus:border-orange-500 focus:outline-none"
+              placeholder="e.g. Architectural Trade-offs in Modern Headless CMS Stacks..."
+              className="w-full rounded-xl border border-[#1e293b] bg-[#141e33] px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
             />
           </div>
 
           {/* If Image Post: Image URLs & Previews */}
           {postType === "image" && (
-            <div className="space-y-3 rounded-xl border border-[#2b3145] bg-[#131620] p-3.5">
-              <label className="block text-xs font-medium text-gray-300">
+            <div className="space-y-3 rounded-xl border border-[#1e293b] bg-[#141e33] p-3.5">
+              <label className="block text-xs font-medium text-slate-300">
                 Photo URL (Direct Image Link)
               </label>
               <div className="flex gap-2">
@@ -209,19 +209,19 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
                   placeholder="https://images.unsplash.com/... or any image link"
-                  className="flex-1 rounded-xl border border-[#2b3145] bg-[#1a1e2b] px-3 py-2 text-xs sm:text-sm text-gray-200 placeholder-gray-500 focus:border-purple-500 focus:outline-none"
+                  className="flex-1 rounded-xl border border-[#1e293b] bg-[#111726] px-3 py-2 text-xs sm:text-sm text-slate-200 placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={handleAddImage}
-                  className="rounded-xl bg-purple-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-purple-700 transition-colors"
+                  className="rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-emerald-500 transition-colors cursor-pointer"
                 >
                   Add Photo
                 </button>
               </div>
 
               {/* Sample Photo Presets */}
-              <div className="flex items-center gap-1.5 flex-wrap pt-1 text-[11px] text-gray-400">
+              <div className="flex items-center gap-1.5 flex-wrap pt-1 text-[11px] text-slate-400">
                 <span>Quick demo photo:</span>
                 <button
                   type="button"
@@ -230,7 +230,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
                       "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80"
                     )
                   }
-                  className="rounded-md bg-[#212638] px-2 py-0.5 text-purple-300 hover:bg-[#2b324a]"
+                  className="rounded-md bg-[#162238] px-2 py-0.5 text-emerald-400 hover:bg-[#1e2d4a] cursor-pointer"
                 >
                   + Retro PC Setup
                 </button>
@@ -241,7 +241,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
                       "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80"
                     )
                   }
-                  className="rounded-md bg-[#212638] px-2 py-0.5 text-purple-300 hover:bg-[#2b324a]"
+                  className="rounded-md bg-[#162238] px-2 py-0.5 text-emerald-400 hover:bg-[#1e2d4a] cursor-pointer"
                 >
                   + Hardware Lab
                 </button>
@@ -288,39 +288,39 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
                   ? "Describe your desk setup gear, camera settings, or hardware specs..."
                   : "Share your thoughts, code snippets, tech insights..."
               }
-              className="w-full rounded-xl border border-[#2b3145] bg-[#1a1e2b] p-3 text-sm text-gray-100 placeholder-gray-500 focus:border-orange-500 focus:outline-none"
+              className="w-full rounded-xl border border-[#1e293b] bg-[#141e33] p-3 text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
             />
           </div>
 
           {/* Tags */}
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1">
+            <label className="block text-xs font-medium text-slate-400 mb-1">
               Tags (comma separated)
             </label>
             <input
               type="text"
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
-              placeholder="Setup, Coding, Hardware, AI"
-              className="w-full rounded-xl border border-[#2b3145] bg-[#1a1e2b] px-3.5 py-2 text-sm text-gray-200 placeholder-gray-500 focus:border-orange-500 focus:outline-none"
+              placeholder="Architecture, HeadlessCMS, NextJS, Python"
+              className="w-full rounded-xl border border-[#1e293b] bg-[#141e33] px-3.5 py-2 text-sm text-slate-200 placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
             />
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#252b3d]">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#1e293b]">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-[#2b3145] px-4 py-2 text-xs sm:text-sm font-semibold text-gray-300 hover:bg-[#1f2331] transition-colors"
+              className="rounded-xl border border-[#1e293b] px-4 py-2 text-xs sm:text-sm font-semibold text-slate-300 hover:bg-[#162238] transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-xl bg-gradient-to-r from-[#ff4500] to-[#ff6333] px-5 py-2 text-xs sm:text-sm font-bold text-white shadow-md hover:from-[#e03d00] hover:to-[#eb5323] disabled:opacity-50 transition-all cursor-pointer"
+              className="rounded-xl bg-emerald-600 hover:bg-emerald-500 px-5 py-2 text-xs sm:text-sm font-bold text-white shadow-sm disabled:opacity-50 transition-all cursor-pointer"
             >
-              {submitting ? "Publishing..." : "Post to Community"}
+              {submitting ? "Publishing..." : "Publish Post"}
             </button>
           </div>
         </form>

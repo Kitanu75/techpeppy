@@ -7,19 +7,19 @@ import {
   ArrowBigDown,
   Share2,
   Bookmark,
-  Pin,
   Check,
-  Calendar,
-  ExternalLink,
 } from "lucide-react";
 import { PostType } from "@/lib/models/types";
 import { CommentTree } from "./CommentTree";
+import { SessionUser } from "@/lib/auth";
 
 interface PostDetailModalProps {
   post: PostType | null;
   onClose: () => void;
   onVote: (postId: string, value: 1 | -1 | 0) => void;
   setActiveCommunity: (slug: string) => void;
+  currentUser?: SessionUser | null;
+  onRequireAuth?: () => void;
 }
 
 export const PostDetailModal: React.FC<PostDetailModalProps> = ({
@@ -27,6 +27,8 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
   onClose,
   onVote,
   setActiveCommunity,
+  currentUser,
+  onRequireAuth,
 }) => {
   if (!post) return null;
 
@@ -76,24 +78,24 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-2 sm:p-4 overflow-y-auto">
-      <div className="relative w-full max-w-4xl rounded-2xl border border-[#2b3248] bg-[#151824] shadow-2xl my-6 flex flex-col max-h-[92vh]">
+      <div className="relative w-full max-w-4xl rounded-2xl border border-[#1e293b] bg-[#0f172a] shadow-2xl my-6 flex flex-col max-h-[92vh] text-[#f8fafc]">
         {/* Sticky Top Header */}
-        <div className="flex items-center justify-between border-b border-[#232838] bg-[#12141c]/95 px-4 sm:px-6 py-3.5 rounded-t-2xl">
-          <div className="flex items-center gap-3 text-xs text-gray-300">
+        <div className="flex items-center justify-between border-b border-[#1e293b] bg-[#0b0f17]/95 px-4 sm:px-6 py-3.5 rounded-t-2xl">
+          <div className="flex items-center gap-3 text-xs text-slate-300">
             {/* Voting Pills in Header */}
-            <div className="flex items-center gap-1 rounded-xl bg-[#1c202d] px-2 py-1 border border-[#2a3044]">
+            <div className="flex items-center gap-1 rounded-xl bg-[#141e33] px-2 py-1 border border-[#1e293b]">
               <button
                 onClick={() => handleVote(1)}
-                className={`p-1 hover:text-orange-500 ${userVote === 1 ? "text-orange-500" : "text-gray-400"}`}
+                className={`p-1 hover:text-emerald-400 transition-colors cursor-pointer ${userVote === 1 ? "text-emerald-400" : "text-slate-400"}`}
               >
-                <ArrowBigUp className={`h-5 w-5 ${userVote === 1 ? "fill-orange-500" : ""}`} />
+                <ArrowBigUp className={`h-5 w-5 ${userVote === 1 ? "fill-emerald-400" : ""}`} />
               </button>
-              <span className={`text-xs font-bold font-mono ${userVote === 1 ? "text-orange-500" : userVote === -1 ? "text-blue-400" : "text-gray-200"}`}>
+              <span className={`text-xs font-bold font-mono ${userVote === 1 ? "text-emerald-400" : userVote === -1 ? "text-blue-400" : "text-slate-200"}`}>
                 {score}
               </span>
               <button
                 onClick={() => handleVote(-1)}
-                className={`p-1 hover:text-blue-400 ${userVote === -1 ? "text-blue-400" : "text-gray-400"}`}
+                className={`p-1 hover:text-blue-400 transition-colors cursor-pointer ${userVote === -1 ? "text-blue-400" : "text-slate-400"}`}
               >
                 <ArrowBigDown className={`h-5 w-5 ${userVote === -1 ? "fill-blue-400" : ""}`} />
               </button>
@@ -104,7 +106,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
                 setActiveCommunity(post.communitySlug);
                 onClose();
               }}
-              className="font-bold text-white hover:text-orange-400 transition-colors"
+              className="font-bold text-white hover:text-emerald-400 transition-colors cursor-pointer"
             >
               t/{post.communitySlug}
             </button>
@@ -114,10 +116,10 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
                 <img
                   src={post.author.avatar}
                   alt={post.author.name}
-                  className="h-4 w-4 rounded-full object-cover"
+                  className="h-4 w-4 rounded-full object-cover ring-1 ring-slate-700"
                 />
               )}
-              <span>u/{post.author.username}</span>
+              <span className="font-medium text-slate-300">u/{post.author.username}</span>
             </div>
             <span>•</span>
             <span>{formatTimeAgo(post.createdAt)}</span>
@@ -125,7 +127,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
 
           <button
             onClick={onClose}
-            className="rounded-xl p-1.5 text-gray-400 hover:bg-[#202534] hover:text-white transition-colors"
+            className="rounded-xl p-1.5 text-slate-400 hover:bg-[#1e293b] hover:text-white transition-colors cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
@@ -144,7 +146,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
               {post.tags.map((t, idx) => (
                 <span
                   key={idx}
-                  className="rounded-full bg-[#202534] px-2.5 py-0.5 text-xs font-medium text-orange-300 border border-orange-500/10"
+                  className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-300 border border-emerald-500/20"
                 >
                   #{t}
                 </span>
@@ -155,7 +157,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
           {/* High-Resolution Photo Showcase */}
           {post.images && post.images.length > 0 && (
             <div className="my-5 space-y-3">
-              <div className="overflow-hidden rounded-2xl border border-[#2c3348] bg-black flex items-center justify-center max-h-[560px]">
+              <div className="overflow-hidden rounded-2xl border border-[#1e293b] bg-black/60 flex items-center justify-center max-h-[560px]">
                 <img
                   src={activePhoto || post.images[0]}
                   alt={post.title}
@@ -170,9 +172,9 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
                     <button
                       key={idx}
                       onClick={() => setActivePhoto(img)}
-                      className={`relative h-16 w-24 shrink-0 overflow-hidden rounded-lg border-2 transition-all ${
+                      className={`relative h-16 w-24 shrink-0 overflow-hidden rounded-lg border-2 transition-all cursor-pointer ${
                         activePhoto === img
-                          ? "border-orange-500 scale-105"
+                          ? "border-emerald-500 scale-105"
                           : "border-transparent opacity-60 hover:opacity-100"
                       }`}
                     >
@@ -186,16 +188,16 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
 
           {/* Full Text / Article Body */}
           {post.content && (
-            <div className="text-sm sm:text-base text-gray-200 leading-relaxed whitespace-pre-line font-sans mb-6">
+            <div className="text-sm sm:text-base text-slate-200 leading-relaxed whitespace-pre-line font-sans mb-6">
               {post.content}
             </div>
           )}
 
           {/* Action Row */}
-          <div className="flex items-center gap-3 pt-4 border-t border-[#232838] text-xs text-gray-400">
+          <div className="flex items-center gap-3 pt-4 border-t border-[#1e293b] text-xs text-slate-400">
             <button
               onClick={handleShare}
-              className="flex items-center gap-1.5 rounded-lg bg-[#1a1e2b] px-3 py-1.5 font-medium hover:text-white transition-colors"
+              className="flex items-center gap-1.5 rounded-lg bg-[#141e33] px-3 py-1.5 font-medium hover:text-white transition-colors cursor-pointer"
             >
               {copied ? (
                 <>
@@ -212,15 +214,19 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
 
             <button
               onClick={() => setSaved(!saved)}
-              className="flex items-center gap-1.5 rounded-lg bg-[#1a1e2b] px-3 py-1.5 font-medium hover:text-white transition-colors"
+              className="flex items-center gap-1.5 rounded-lg bg-[#141e33] px-3 py-1.5 font-medium hover:text-white transition-colors cursor-pointer"
             >
-              <Bookmark className={`h-4 w-4 ${saved ? "fill-orange-400 text-orange-400" : ""}`} />
+              <Bookmark className={`h-4 w-4 ${saved ? "fill-emerald-400 text-emerald-400" : ""}`} />
               <span>{saved ? "Saved to Profile" : "Save"}</span>
             </button>
           </div>
 
           {/* Nested Reddit Comment Tree */}
-          <CommentTree postId={post.id} />
+          <CommentTree
+            postId={post.id}
+            currentUser={currentUser}
+            onRequireAuth={onRequireAuth}
+          />
         </div>
       </div>
     </div>

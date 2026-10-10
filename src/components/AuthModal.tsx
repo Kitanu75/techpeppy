@@ -81,16 +81,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#ff4500] to-[#ff7a00] shadow-md shadow-orange-500/20">
-            <Lock className="h-5 w-5 text-white" />
+          <div className="mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
+            <Lock className="h-5 w-5" />
           </div>
           <h2 className="text-xl font-extrabold text-white">
-            {mode === "login" ? "Welcome Back to TechPeppy" : "Join the TechPeppy Community"}
+            {mode === "login" ? "Welcome Back to TechPeppy" : "Join TechPeppy Platform"}
           </h2>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-slate-400 mt-1">
             {mode === "login"
-              ? "Sign in to upvote, comment, and share your setups"
-              : "Create an account to post photos, tech reviews, and earn karma"}
+              ? "Sign in to post discussions, share setups, and upvote"
+              : "Create an account to join the software & AI engineering community"}
           </p>
         </div>
 
@@ -141,24 +141,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   Full Name
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <input
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Sandeep Kumar"
-                    className="w-full rounded-xl border border-[#2b3145] bg-[#1a1e2b] py-2.5 pl-10 pr-3.5 text-xs sm:text-sm text-gray-100 placeholder-gray-500 focus:border-orange-500 focus:outline-none"
+                    className="w-full rounded-xl border border-[#1e293b] bg-[#141e33] py-2.5 pl-10 pr-3.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-300 mb-1">
+                <label className="block text-xs font-medium text-slate-300 mb-1">
                   Username (unique handle)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-500">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500">
                     u/
                   </span>
                   <input
@@ -167,24 +167,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="sandeep_tech"
-                    className="w-full rounded-xl border border-[#2b3145] bg-[#1a1e2b] py-2.5 pl-9 pr-3.5 text-xs sm:text-sm text-gray-100 placeholder-gray-500 focus:border-orange-500 focus:outline-none"
+                    className="w-full rounded-xl border border-[#1e293b] bg-[#141e33] py-2.5 pl-9 pr-3.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-300 mb-1">
+                <label className="block text-xs font-medium text-slate-300 mb-1">
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@techpeppy.com"
-                    className="w-full rounded-xl border border-[#2b3145] bg-[#1a1e2b] py-2.5 pl-10 pr-3.5 text-xs sm:text-sm text-gray-100 placeholder-gray-500 focus:border-orange-500 focus:outline-none"
+                    className="w-full rounded-xl border border-[#1e293b] bg-[#141e33] py-2.5 pl-10 pr-3.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
                   />
                 </div>
               </div>
@@ -193,18 +193,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
           {mode === "login" && (
             <div>
-              <label className="block text-xs font-medium text-gray-300 mb-1">
+              <label className="block text-xs font-medium text-slate-300 mb-1">
                 Username or Email
               </label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <input
                   type="text"
                   required
                   value={loginInput}
                   onChange={(e) => setLoginInput(e.target.value)}
                   placeholder="admin@techpeppy.com or username"
-                  className="w-full rounded-xl border border-[#2b3145] bg-[#1a1e2b] py-2.5 pl-10 pr-3.5 text-xs sm:text-sm text-gray-100 placeholder-gray-500 focus:border-orange-500 focus:outline-none"
+                  className="w-full rounded-xl border border-[#1e293b] bg-[#141e33] py-2.5 pl-10 pr-3.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
                 />
               </div>
             </div>
@@ -222,7 +222,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full rounded-xl border border-[#2b3145] bg-[#1a1e2b] py-2.5 pl-10 pr-3.5 text-xs sm:text-sm text-gray-100 placeholder-gray-500 focus:border-orange-500 focus:outline-none"
+                className="w-full rounded-xl border border-[#1e293b] bg-[#141e33] py-2.5 pl-10 pr-3.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
               />
             </div>
           </div>
@@ -230,7 +230,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-gradient-to-r from-[#ff4500] to-[#ff6333] py-2.5 text-xs sm:text-sm font-bold text-white shadow-md hover:from-[#e03d00] hover:to-[#eb5323] disabled:opacity-50 transition-all cursor-pointer mt-4"
+            className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-500 py-2.5 text-xs sm:text-sm font-bold text-white shadow-sm disabled:opacity-50 transition-all cursor-pointer mt-4"
           >
             {loading
               ? "Authenticating..."
@@ -241,12 +241,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </form>
 
         {/* Quick Admin Credentials Hint */}
-        <div className="mt-5 pt-4 border-t border-[#232838] flex items-center justify-between text-[11px] text-gray-400">
+        <div className="mt-5 pt-4 border-t border-[#1e293b] flex items-center justify-between text-[11px] text-slate-400">
           <span>Admin login?</span>
           <button
             type="button"
             onClick={fillAdminCredentials}
-            className="text-orange-400 hover:underline flex items-center gap-1 font-semibold"
+            className="text-emerald-400 hover:underline flex items-center gap-1 font-semibold cursor-pointer"
           >
             <Shield className="h-3.5 w-3.5" />
             <span>Use Admin Login</span>

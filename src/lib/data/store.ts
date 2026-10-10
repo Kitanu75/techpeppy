@@ -16,12 +16,13 @@ async function ensureSeeded() {
   const db = await connectToDatabase();
   if (db) {
     try {
-      const commCount = await CommunityModel.countDocuments();
-      if (commCount === 0) {
-        await CommunityModel.insertMany(INITIAL_COMMUNITIES);
+      for (const comm of INITIAL_COMMUNITIES) {
+        await CommunityModel.findOneAndUpdate(
+          { slug: comm.slug },
+          { ...comm },
+          { upsert: true }
+        );
       }
-      // Note: We intentionally avoid auto-seeding dummy mock posts,
-      // so MongoDB Atlas stays clean for genuine user posts.
       isSeeded = true;
     } catch (e) {
       console.warn("DB seed notice:", e);

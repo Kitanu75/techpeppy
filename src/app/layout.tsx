@@ -13,14 +13,22 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TechPeppy — The Pulse of Tech & Developer Discussions",
+  title: "TechPeppy — Software Architecture, AI Systems & Workstations",
   description:
-    "Join TechPeppy.com to discover and share desk setups, hardware reviews, AI breakthroughs, and developer discussions with Reddit-style voting and nested comments.",
-  keywords: ["Tech", "Community", "Desk Setups", "Gadgets", "AI", "Software Development", "Reddit"],
-  authors: [{ name: "TechPeppy Team" }],
+    "Engineering publication and developer platform focused on decoupled software architecture, production AI/RAG orchestration, data pipelines, and workspace gear.",
+  keywords: [
+    "Software Architecture",
+    "Headless CMS",
+    "AI Systems",
+    "RAG",
+    "Data Science",
+    "Desk Setups",
+    "TechPeppy",
+  ],
+  authors: [{ name: "Sandeep Kumar" }, { name: "TechPeppy" }],
   openGraph: {
-    title: "TechPeppy — Tech Community Platform",
-    description: "Share setup photos, gadget reviews, and developer discussions.",
+    title: "TechPeppy — Software Architecture, AI Systems & Workstations",
+    description: "Engineering publication and developer platform by Sandeep Kumar.",
     url: "https://techpeppy.com",
     siteName: "TechPeppy",
     type: "website",
@@ -37,7 +45,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#0d0f15]">{children}</body>
+      <body className="min-h-full flex flex-col bg-[#0b0f17] text-[#f8fafc]">{children}</body>
     </html>
   );
 }

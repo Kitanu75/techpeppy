@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Home, Flame, Sparkles, Plus, Users, Hash, ShieldCheck } from "lucide-react";
+import { Home, Sparkles, Plus, Code2, BrainCircuit, Database, Laptop, Newspaper } from "lucide-react";
 import { CommunityType } from "@/lib/models/types";
 
 interface SidebarLeftProps {
@@ -19,53 +19,68 @@ export const SidebarLeft: React.FC<SidebarLeftProps> = ({
 }) => {
   return (
     <aside className="hidden lg:block w-64 shrink-0 pr-4">
-      <div className="sticky top-20 space-y-6">
-        {/* Main Feeds */}
-        <div className="rounded-2xl border border-[#232838] bg-[#151822] p-3 shadow-sm">
-          <p className="px-3 pb-2 text-[11px] font-bold uppercase tracking-wider text-gray-400">
-            Feeds
+      <div className="sticky top-20 space-y-5">
+        {/* Navigation Feeds */}
+        <div className="rounded-2xl border border-[#1e293b] bg-[#0f172a] p-3 shadow-sm">
+          <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            Navigation
           </p>
           <div className="space-y-1">
             <button
               onClick={() => setActiveCommunity("all")}
-              className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all ${
+              className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium transition-all cursor-pointer ${
                 activeCommunity === "all"
-                  ? "bg-orange-500/15 text-orange-400 font-semibold border border-orange-500/20"
-                  : "text-gray-300 hover:bg-[#1f2331] hover:text-white"
+                  ? "bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20"
+                  : "text-slate-300 hover:bg-[#162238] hover:text-white"
               }`}
             >
-              <Home className="h-4 w-4" />
-              <span>All Feeds</span>
+              <Home className="h-4 w-4 text-emerald-400" />
+              <span>All Discussions</span>
             </button>
             <button
-              onClick={() => setActiveCommunity("all")}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-gray-300 hover:bg-[#1f2331] hover:text-white transition-all"
+              onClick={() => setActiveCommunity("software-architecture")}
+              className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium transition-all cursor-pointer ${
+                activeCommunity === "software-architecture"
+                  ? "bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20"
+                  : "text-slate-300 hover:bg-[#162238] hover:text-white"
+              }`}
             >
-              <Flame className="h-4 w-4 text-orange-400" />
-              <span>Popular Today</span>
+              <Code2 className="h-4 w-4 text-teal-400" />
+              <span>Software Engineering</span>
+            </button>
+            <button
+              onClick={() => setActiveCommunity("ai-learning")}
+              className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium transition-all cursor-pointer ${
+                activeCommunity === "ai-learning"
+                  ? "bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20"
+                  : "text-slate-300 hover:bg-[#162238] hover:text-white"
+              }`}
+            >
+              <BrainCircuit className="h-4 w-4 text-blue-400" />
+              <span>AI Learning & RAG</span>
             </button>
             <button
               onClick={() => setActiveCommunity("desk-setups")}
-              className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all ${
+              className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium transition-all cursor-pointer ${
                 activeCommunity === "desk-setups"
-                  ? "bg-purple-500/15 text-purple-400 font-semibold border border-purple-500/20"
-                  : "text-gray-300 hover:bg-[#1f2331] hover:text-white"
+                  ? "bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20"
+                  : "text-slate-300 hover:bg-[#162238] hover:text-white"
               }`}
             >
-              <Sparkles className="h-4 w-4 text-purple-400" />
-              <span>Photo Showcase</span>
+              <Laptop className="h-4 w-4 text-indigo-400" />
+              <span>Workstation Setups</span>
             </button>
           </div>
         </div>
 
-        {/* Communities */}
-        <div className="rounded-2xl border border-[#232838] bg-[#151822] p-3 shadow-sm">
+        {/* Real Topic Channels */}
+        <div className="rounded-2xl border border-[#1e293b] bg-[#0f172a] p-3 shadow-sm">
           <div className="flex items-center justify-between px-3 pb-2">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
-              Communities
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              Topics
             </p>
-            <span className="text-[10px] text-gray-400 font-medium">
-              {communities.length} Active
+            <span className="text-[10px] text-emerald-400 font-semibold">
+              Live Hub
             </span>
           </div>
 
@@ -76,46 +91,33 @@ export const SidebarLeft: React.FC<SidebarLeftProps> = ({
                 <button
                   key={c.id || c.slug}
                   onClick={() => setActiveCommunity(c.slug)}
-                  className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-medium transition-all ${
+                  className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-medium transition-all cursor-pointer ${
                     isActive
-                      ? "bg-gradient-to-r from-orange-500/20 to-transparent text-white font-semibold border-l-2 border-orange-500"
-                      : "text-gray-300 hover:bg-[#1f2331] hover:text-white"
+                      ? "bg-emerald-500/15 text-emerald-300 font-semibold border-l-2 border-emerald-500"
+                      : "text-slate-300 hover:bg-[#162238] hover:text-white"
                   }`}
                 >
                   <div className="flex items-center gap-2.5 truncate">
-                    <span className="text-base">{c.icon || "🔥"}</span>
+                    <span className="text-sm">{c.icon || "💻"}</span>
                     <span className="truncate">{c.name}</span>
                   </div>
-                  <span className="text-[11px] text-gray-400 font-mono">
-                    {c.membersCount > 1000
-                      ? `${(c.membersCount / 1000).toFixed(1)}k`
-                      : c.membersCount}
+                  <span className="text-[9px] text-slate-400 bg-slate-800/80 px-1.5 py-0.5 rounded">
+                    t/{c.slug.split("-")[0]}
                   </span>
                 </button>
               );
             })}
           </div>
 
-          <div className="pt-3 mt-2 border-t border-[#232838]">
+          <div className="pt-3 mt-2 border-t border-[#1e293b]">
             <button
               onClick={openCreateModal}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[#343b52] py-2 text-xs font-semibold text-gray-300 hover:border-orange-500 hover:text-orange-400 hover:bg-orange-500/5 transition-all cursor-pointer"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[#2d3a50] py-2 text-xs font-semibold text-slate-400 hover:border-emerald-500/50 hover:text-emerald-400 transition-colors cursor-pointer"
             >
               <Plus className="h-3.5 w-3.5" />
-              <span>Create Post in Community</span>
+              <span>Share Discussion / Setup</span>
             </button>
           </div>
-        </div>
-
-        {/* Community Info Box */}
-        <div className="rounded-2xl border border-[#232838] bg-gradient-to-b from-[#171b26] to-[#12141c] p-4 text-xs text-gray-400">
-          <div className="flex items-center gap-2 text-white font-semibold mb-1.5">
-            <ShieldCheck className="h-4 w-4 text-orange-400" />
-            <span>TechPeppy Platform</span>
-          </div>
-          <p className="leading-relaxed">
-            A developer & gadget community powered by MongoDB Atlas. Share high-res photos, setups & tech discussions.
-          </p>
         </div>
       </div>
     </aside>
