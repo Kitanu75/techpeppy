@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import connectToDatabase from "@/lib/mongodb";
-import { PostModel, CommentModel, VoteModel } from "@/lib/models/schemas";
 import { getCurrentUser } from "@/lib/auth";
+import { clearAllPostsAndComments } from "@/lib/data/store";
 
 export async function POST() {
   try {
@@ -13,20 +12,11 @@ export async function POST() {
       );
     }
 
-    const db = await connectToDatabase();
-    if (db) {
-      await PostModel.deleteMany({});
-      await CommentModel.deleteMany({});
-      await VoteModel.deleteMany({});
-      return NextResponse.json({
-        success: true,
-        message: "All sample posts and comments cleared from MongoDB Atlas. Database is clean!",
-      });
-    }
+    await clearAllPostsAndComments();
 
     return NextResponse.json({
       success: true,
-      message: "Database cleared.",
+      message: "All sample mock posts and comments have been permanently cleared. Database is 100% clean!",
     });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });

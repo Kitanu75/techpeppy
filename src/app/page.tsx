@@ -113,6 +113,39 @@ export default function Home() {
     setSelectedPost(newPost);
   };
 
+  const handleDeletePost = async (postId: string) => {
+    try {
+      const res = await fetch(`/api/posts/${postId}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        setPosts((prev) => prev.filter((p) => p.id !== postId));
+        if (selectedPost?.id === postId) {
+          setSelectedPost(null);
+        }
+      } else {
+        alert(data.error || "Failed to delete post");
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+    }
+  };
+
+  const handleCleanMockData = async () => {
+    if (!confirm("Are you sure you want to permanently clear all sample mock posts and comments?")) return;
+    try {
+      const res = await fetch("/api/admin/clean", { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        setPosts([]);
+        alert(data.message || "Sample posts removed successfully!");
+      } else {
+        alert(data.error || "Failed to clean sample data");
+      }
+    } catch (err) {
+      console.error("Clean error:", err);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
@@ -147,6 +180,7 @@ export default function Home() {
           setIsAuthOpen(true);
         }}
         onLogout={handleLogout}
+        onCleanMockData={handleCleanMockData}
       />
 
       {/* Main Container */}
@@ -279,6 +313,8 @@ export default function Home() {
                     onSelectPost={(p) => setSelectedPost(p)}
                     onVote={handleVote}
                     setActiveCommunity={setActiveCommunity}
+                    currentUser={user}
+                    onDeletePost={handleDeletePost}
                   />
                 ))}
               </div>

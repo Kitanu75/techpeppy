@@ -20,15 +20,8 @@ async function ensureSeeded() {
       if (commCount === 0) {
         await CommunityModel.insertMany(INITIAL_COMMUNITIES);
       }
-      const postCount = await PostModel.countDocuments();
-      if (postCount === 0) {
-        await PostModel.insertMany(
-          INITIAL_POSTS.map((p) => ({
-            ...p,
-            _id: undefined,
-          }))
-        );
-      }
+      // Note: We intentionally avoid auto-seeding dummy mock posts,
+      // so MongoDB Atlas stays clean for genuine user posts.
       isSeeded = true;
     } catch (e) {
       console.warn("DB seed notice:", e);
@@ -248,6 +241,37 @@ export async function votePost(postId: string, voteValue: 1 | -1 | 0, userId: st
     score: post ? post.score : 1,
     userVote: post?.userVote || 0,
   };
+}
+
+export async function deletePost(postId: string): Promise<boolean> {
+  const db = await connectToDatabase();
+  if (db) {
+    try {
+      await PostModel.findByIdAndDelete(postId);
+      await CommentModel.deleteMany({ postId });
+      await VoteModel.deleteMany({ targetId: postId });
+    } catch (e) {
+      console.warn("DB deletePost error:", e);
+    }
+  }
+  memoryPosts = memoryPosts.filter((p) => p.id !== postId);
+  memoryComments = memoryComments.filter((c) => c.postId !== postId);
+  return true;
+}
+
+export async function clearAllPostsAndComments(): Promise<void> {
+  const db = await connectToDatabase();
+  if (db) {
+    try {
+      await PostModel.deleteMany({});
+      await CommentModel.deleteMany({});
+      await VoteModel.deleteMany({});
+    } catch (e) {
+      console.warn("DB clearAll error:", e);
+    }
+  }
+  memoryPosts = [];
+  memoryComments = [];
 }
 
 export async function getComments(postId: string): Promise<CommentType[]> {

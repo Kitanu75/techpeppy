@@ -11,14 +11,18 @@ import {
   Check,
   ExternalLink,
   Sparkles,
+  Trash2,
 } from "lucide-react";
 import { PostType } from "@/lib/models/types";
+import { SessionUser } from "@/lib/auth";
 
 interface PostCardProps {
   post: PostType;
   onSelectPost: (post: PostType) => void;
   onVote: (postId: string, value: 1 | -1 | 0) => void;
   setActiveCommunity: (slug: string) => void;
+  currentUser?: SessionUser | null;
+  onDeletePost?: (postId: string) => void;
 }
 
 export const PostCard: React.FC<PostCardProps> = ({
@@ -26,6 +30,8 @@ export const PostCard: React.FC<PostCardProps> = ({
   onSelectPost,
   onVote,
   setActiveCommunity,
+  currentUser,
+  onDeletePost,
 }) => {
   const [copied, setCopied] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -254,6 +260,22 @@ export const PostCard: React.FC<PostCardProps> = ({
             <Bookmark className={`h-4 w-4 ${saved ? "fill-orange-400" : ""}`} />
             <span>{saved ? "Saved" : "Save"}</span>
           </button>
+
+          {currentUser && (currentUser.role === "admin" || currentUser.id === post.author?.id) && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (confirm("Delete this post?")) {
+                  if (onDeletePost) onDeletePost(post.id);
+                }
+              }}
+              title="Delete post"
+              className="ml-auto flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs text-red-400/80 hover:text-red-300 hover:bg-red-500/15 transition-colors cursor-pointer"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              <span>Delete</span>
+            </button>
+          )}
         </div>
       </div>
     </article>

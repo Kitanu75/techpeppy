@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Search, Plus, Bell, Flame, Shield, X, LogIn, LogOut, User as UserIcon } from "lucide-react";
+import { Search, Plus, Bell, Flame, Shield, X, LogIn, LogOut, Trash2, User as UserIcon } from "lucide-react";
 import { SessionUser } from "@/lib/auth";
 
 interface NavbarProps {
@@ -13,6 +13,7 @@ interface NavbarProps {
   user: SessionUser | null;
   openAuthModal: (mode: "login" | "register") => void;
   onLogout: () => void;
+  onCleanMockData?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -23,6 +24,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   user,
   openAuthModal,
   onLogout,
+  onCleanMockData,
 }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
 
@@ -142,6 +144,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <div className="px-3 py-1.5 text-[11px] text-gray-400">
                       Email: <span className="text-gray-200">{user.email}</span>
                     </div>
+
+                    {user.role === "admin" && (
+                      <button
+                        onClick={() => {
+                          setShowUserMenu(false);
+                          if (onCleanMockData) onCleanMockData();
+                        }}
+                        className="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-amber-400 hover:bg-amber-500/10 transition-colors text-left font-medium cursor-pointer"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span>Wipe Dummy Posts (Clean Feed)</span>
+                      </button>
+                    )}
 
                     <button
                       onClick={() => {
