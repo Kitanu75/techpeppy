@@ -48,4 +48,7 @@
   - [x] 4. Build Post creation modal (Tabs for '📝 Text / Discussion' and '📸 Photos & Images').
   - [x] 5. Implement signature Upvote/Downvote pillar (+1 / -1) and Nested collapsible comments.
   - [x] 6. Tested & verified full interactive loop on `http://localhost:3000` via browser subagent.
-  - [ ] 7. Next: Push to developer's GitHub repository and connect to client's Vercel account (`project-bolt-sb1-mz1qoxaa-1`).
+  - [x] 7. Pushed to GitHub: [https://github.com/Kitanu75/techpeppy](https://github.com/Kitanu75/techpeppy)
+  - [x] 8. Deployed to Vercel on client account (`techpeppy-platform`).
+  - [x] 9. Connected Custom Domain & DNS on WordPress.com: [https://techpeppy.com](https://techpeppy.com) and [https://www.techpeppy.com](https://www.techpeppy.com). Status: **100% LIVE**!
+
