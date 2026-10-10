@@ -10,7 +10,7 @@
   - Password: `SupermanNoida@3364`
 - **Vercel Login**: Same credentials as Hostinger
 - **Repository & Deployment Strategy**:
-  - Code will be pushed to the developer's own GitHub account.
+  - Code pushed to: [https://github.com/Kitanu75/techpeppy](https://github.com/Kitanu75/techpeppy)
   - Production deployment & domain binding (`Techpeppy.com`) will be configured on the client's Vercel account (`sandeepsi3572@gmail.com`).
 
 ---
