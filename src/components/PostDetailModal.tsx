@@ -77,24 +77,24 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-2 sm:p-4 overflow-y-auto">
-      <div className="relative w-full max-w-3xl rounded-2xl border border-[#E8E5DD] bg-white shadow-2xl my-6 flex flex-col max-h-[92vh] text-[#1C1B18]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-2 sm:p-4 overflow-y-auto">
+      <div className="relative w-full max-w-3xl rounded-2xl border border-zinc-200/90 bg-white shadow-2xl my-6 flex flex-col max-h-[92vh] text-zinc-950">
         {/* Sticky Top Header */}
-        <div className="flex items-center justify-between border-b border-[#E8E5DD] bg-white/95 px-4 sm:px-6 py-3 rounded-t-2xl">
-          <div className="flex items-center gap-3 text-xs text-[#8C8A83]">
+        <div className="flex items-center justify-between border-b border-zinc-100 bg-white/95 px-4 sm:px-6 py-3 rounded-t-2xl">
+          <div className="flex items-center gap-3 text-xs text-zinc-500">
             {/* Voting Pills in Header */}
-            <div className="flex items-center gap-1 rounded-xl bg-[#F8F7F4] px-2 py-0.5 border border-[#E8E5DD]">
+            <div className="flex items-center gap-1 rounded-xl bg-zinc-50 px-2 py-0.5 border border-zinc-200/80">
               <button
                 onClick={() => handleVote(1)}
                 className={`p-0.5 hover:text-emerald-700 transition-colors cursor-pointer ${
-                  userVote === 1 ? "text-emerald-700" : "text-[#8C8A83]"
+                  userVote === 1 ? "text-emerald-700" : "text-zinc-500"
                 }`}
               >
                 <ArrowBigUp className={`h-4 w-4 ${userVote === 1 ? "fill-emerald-600" : ""}`} />
               </button>
               <span
                 className={`text-xs font-bold font-mono ${
-                  userVote === 1 ? "text-emerald-700" : userVote === -1 ? "text-rose-600" : "text-[#4A4843]"
+                  userVote === 1 ? "text-emerald-700" : userVote === -1 ? "text-rose-600" : "text-zinc-700"
                 }`}
               >
                 {score}
@@ -102,7 +102,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
               <button
                 onClick={() => handleVote(-1)}
                 className={`p-0.5 hover:text-rose-600 transition-colors cursor-pointer ${
-                  userVote === -1 ? "text-rose-600" : "text-[#8C8A83]"
+                  userVote === -1 ? "text-rose-600" : "text-zinc-500"
                 }`}
               >
                 <ArrowBigDown className={`h-4 w-4 ${userVote === -1 ? "fill-rose-600" : ""}`} />
@@ -114,7 +114,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
                 setActiveCommunity(post.communitySlug);
                 onClose();
               }}
-              className="flex items-center gap-1.5 font-bold text-[#1C1B18] hover:text-emerald-700 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 font-bold text-zinc-950 hover:text-emerald-600 transition-colors cursor-pointer"
             >
               <CommunityIcon slug={post.communitySlug} className="h-3.5 w-3.5" />
               <span>t/{post.communitySlug}</span>
@@ -125,7 +125,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
                 <img
                   src={post.author.avatar}
                   alt=""
-                  className="h-4 w-4 rounded-full object-cover ring-1 ring-[#E8E5DD]"
+                  className="h-4 w-4 rounded-full object-cover ring-1 ring-zinc-200"
                 />
               )}
               <span>u/{post.author.username}</span>
@@ -136,7 +136,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
 
           <button
             onClick={onClose}
-            className="rounded-full p-1.5 text-[#8C8A83] hover:bg-[#F1EFE9] hover:text-[#1C1B18] transition-colors cursor-pointer"
+            className="rounded-full p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-950 transition-colors cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
@@ -144,7 +144,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
 
         {/* Scrollable Modal Content */}
         <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
-          <h1 className="text-lg sm:text-xl font-bold text-[#1C1B18] leading-tight mb-3">
+          <h1 className="text-lg sm:text-xl font-bold text-zinc-950 leading-tight mb-3">
             {post.title}
           </h1>
 
@@ -154,7 +154,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
               {post.tags.map((t, idx) => (
                 <span
                   key={idx}
-                  className="rounded-lg bg-[#F1EFE9] border border-[#E8E5DD] px-2.5 py-0.5 text-xs text-[#4A4843]"
+                  className="rounded-md bg-zinc-100 border border-zinc-200/60 px-2.5 py-0.5 text-xs font-mono text-zinc-600"
                 >
                   #{t}
                 </span>
@@ -165,7 +165,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
           {/* Images */}
           {post.images && post.images.length > 0 && (
             <div className="my-3 space-y-2">
-              <div className="overflow-hidden rounded-xl border border-[#E8E5DD] bg-[#F8F7F4] flex items-center justify-center max-h-[500px]">
+              <div className="overflow-hidden rounded-xl border border-zinc-200/80 bg-zinc-50 flex items-center justify-center max-h-[500px]">
                 <img
                   src={activePhoto || post.images[0]}
                   alt=""
@@ -195,13 +195,13 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
 
           {/* Body Content */}
           {post.content && (
-            <div className="text-xs sm:text-sm text-[#4A4843] leading-relaxed whitespace-pre-line mb-4">
+            <div className="text-xs sm:text-sm text-zinc-600 leading-relaxed whitespace-pre-line mb-4 font-normal">
               {post.content}
             </div>
           )}
 
           {/* Action Row */}
-          <div className="flex items-center gap-3 pt-3 border-t border-[#F1EFE9] text-xs text-[#8C8A83]">
+          <div className="flex items-center gap-3 pt-3 border-t border-zinc-100 text-xs text-zinc-500">
             <button
               onClick={handleShare}
               className="flex items-center gap-1.5 hover:text-emerald-700 transition-colors cursor-pointer"

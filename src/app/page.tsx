@@ -146,7 +146,7 @@ export default function Home() {
   const currentCommunityObj = communities.find((c) => c.slug === activeCommunity);
 
   return (
-    <div className="min-h-screen bg-[#F8F7F4] text-[#1C1B18]">
+    <div className="min-h-screen bg-[#FAFAFA] text-zinc-950">
       {/* Navbar */}
       <Navbar
         searchQuery={searchQuery}
@@ -195,17 +195,17 @@ export default function Home() {
           <section className="flex-1 max-w-[760px] min-w-0">
             {/* Publication Showcase Hero (When viewing All Feeds) */}
             {activeCommunity === "all" && !searchQuery && (
-              <div className="mb-4 rounded-2xl border border-[#E8E5DD] bg-white p-5 sm:p-6 shadow-xs relative overflow-hidden">
+              <div className="mb-4 rounded-2xl border border-zinc-200/90 bg-white p-5 sm:p-6 shadow-xs relative overflow-hidden">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/60">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-medium bg-emerald-50 text-emerald-800 border border-emerald-200/80">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
                     Engineering Publication & Architecture Hub
                   </span>
                 </div>
-                <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#1C1B18] mb-1.5">
+                <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-zinc-950 mb-1.5">
                   Decoupled Systems, Production AI & Workstations
                 </h1>
-                <p className="text-xs sm:text-sm text-[#4A4843] leading-relaxed max-w-2xl">
+                <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed max-w-2xl">
                   High-signal technical rationale, microservice blueprints, local LLM orchestration, and ergonomic workspace gear curated by Sandeep Kumar.
                 </p>
               </div>
@@ -213,7 +213,7 @@ export default function Home() {
 
             {/* Active Channel Header (if filtered) */}
             {activeCommunity !== "all" && currentCommunityObj && (
-              <div className="mb-4 rounded-2xl border border-[#E8E5DD] bg-white p-5 shadow-xs">
+              <div className="mb-4 rounded-2xl border border-zinc-200/90 bg-white p-5 shadow-xs">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3.5">
                     <CommunityIcon
@@ -222,10 +222,10 @@ export default function Home() {
                       className="h-6 w-6"
                     />
                     <div>
-                      <h1 className="text-lg font-bold text-[#1C1B18]">
+                      <h1 className="text-lg font-bold text-zinc-950">
                         {currentCommunityObj.name}
                       </h1>
-                      <p className="text-xs text-[#8C8A83] mt-0.5">
+                      <p className="text-xs text-zinc-500 mt-0.5">
                         t/{currentCommunityObj.slug} • {currentCommunityObj.description}
                       </p>
                     </div>
@@ -240,7 +240,7 @@ export default function Home() {
                         setIsCreateOpen(true);
                       }
                     }}
-                    className="rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors cursor-pointer shrink-0"
+                    className="rounded-xl bg-zinc-950 hover:bg-zinc-800 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition-colors cursor-pointer shrink-0"
                   >
                     Post Here
                   </button>
@@ -273,16 +273,16 @@ export default function Home() {
                 {[1, 2, 3].map((n) => (
                   <div
                     key={n}
-                    className="h-32 rounded-2xl border border-[#E8E5DD] bg-white skeleton-pulse"
+                    className="h-32 rounded-2xl border border-zinc-200/80 bg-white skeleton-pulse"
                   />
                 ))}
               </div>
             ) : posts.length === 0 ? (
-              <div className="rounded-2xl border border-[#E8E5DD] bg-white p-8 text-center shadow-xs">
-                <p className="text-sm font-semibold text-[#1C1B18] mb-1">
+              <div className="rounded-2xl border border-zinc-200/90 bg-white p-8 text-center shadow-xs">
+                <p className="text-sm font-semibold text-zinc-950 mb-1">
                   No posts yet in this feed
                 </p>
-                <p className="text-xs text-[#8C8A83] mb-4">
+                <p className="text-xs text-zinc-500 mb-4">
                   {searchQuery
                     ? `No matching results for "${searchQuery}".`
                     : "Be the first to share an architectural tip, discussion, or setup!"}
@@ -296,7 +296,7 @@ export default function Home() {
                       setIsCreateOpen(true);
                     }
                   }}
-                  className="rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors cursor-pointer"
+                  className="rounded-xl bg-zinc-950 hover:bg-zinc-800 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition-colors cursor-pointer"
                 >
                   Create Post
                 </button>

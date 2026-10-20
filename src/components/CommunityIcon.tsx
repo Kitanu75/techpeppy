@@ -27,8 +27,8 @@ const iconMap: Record<string, { icon: LucideIcon; color: string; bg: string }> =
   },
   "desk-setups": {
     icon: Laptop,
-    color: "text-[#4A4843]",
-    bg: "bg-[#F1EFE9] border-[#E8E5DD]",
+    color: "text-sky-700",
+    bg: "bg-sky-50 border-sky-200/60",
   },
   "tech-news": {
     icon: Zap,
@@ -44,8 +44,8 @@ export const CommunityIcon: React.FC<CommunityIconProps> = ({
 }) => {
   const meta = iconMap[slug] || {
     icon: Layers,
-    color: "text-[#4A4843]",
-    bg: "bg-[#F1EFE9] border-[#E8E5DD]",
+    color: "text-zinc-700",
+    bg: "bg-zinc-100 border-zinc-200/80",
   };
 
   const IconComponent = meta.icon;

@@ -1,42 +1,47 @@
 @import "tailwindcss";
 
 :root {
-  /* === WARM STONE & EMERALD — 2026 Premium Design System === */
+  /* === ZINC PRECISION DESIGN SYSTEM (Vercel Geist + Linear Grade) === */
 
   /* Canvas & Surfaces */
-  --bg-canvas: #F8F7F4;
+  --bg-canvas: #FAFAFA;
   --bg-card: #FFFFFF;
-  --bg-card-hover: #FAFAF8;
-  --bg-subtle: #F1EFE9;
-  --bg-warm: #EDE9E0;
+  --bg-card-hover: #FDFDFD;
+  --bg-subtle: #F4F4F5;
+  --bg-muted: #E4E4E7;
 
   /* Typography */
-  --text-primary: #1C1B18;
-  --text-secondary: #4A4843;
-  --text-muted: #8C8A83;
-  --text-dim: #ACA9A2;
+  --text-primary: #09090B;
+  --text-secondary: #52525B;
+  --text-muted: #71717A;
+  --text-dim: #A1A1AA;
 
-  /* Accent - Emerald */
+  /* Accent - Precision Emerald */
   --accent: #059669;
   --accent-hover: #047857;
   --accent-light: #ECFDF5;
-  --accent-glow: rgba(5, 150, 105, 0.08);
+  --accent-glow: rgba(5, 150, 105, 0.12);
+
+  /* Primary Action Button (Obsidian) */
+  --btn-primary: #09090B;
+  --btn-primary-hover: #27272A;
+  --btn-primary-text: #FFFFFF;
 
   /* Borders */
-  --border: #E8E5DD;
-  --border-hover: #D4D0C7;
-  --border-accent: rgba(5, 150, 105, 0.25);
+  --border: #E4E4E7;
+  --border-hover: #D4D4D8;
+  --border-accent: rgba(5, 150, 105, 0.3);
 
   /* Semantic */
   --success: #059669;
-  --danger: #DC2626;
-  --warning: #D97706;
+  --danger: #E11D48;
+  --warning: #F59E0B;
   --info: #2563EB;
 
   /* Motion */
-  --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
-  --duration-fast: 180ms;
-  --duration-normal: 250ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 220ms;
 }
 
 html {
@@ -46,17 +51,17 @@ html {
 body {
   background-color: var(--bg-canvas);
   color: var(--text-primary);
-  font-family: var(--font-geist-sans), 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;
 }
 
-/* === SCROLLBAR === */
+/* === MINIMAL SCROLLBAR === */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -64,19 +69,28 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: #D4D4D8;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--border-hover);
+  background: #A1A1AA;
 }
 
 /* === SMOOTH TRANSITIONS === */
 * {
   transition-property: color, background-color, border-color, opacity, box-shadow, transform;
   transition-duration: var(--duration-fast);
-  transition-timing-function: var(--ease-smooth);
+  transition-timing-function: var(--ease-out);
+}
+
+/* === CARD SHADOWS === */
+.shadow-card {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02), 0 0 0 1px var(--border);
+}
+
+.shadow-card-hover {
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.04), 0 0 0 1px var(--border-hover);
 }
 
 /* === SKELETON LOADING === */
@@ -86,14 +100,14 @@ body {
 }
 
 .skeleton-pulse {
-  background: linear-gradient(90deg, #F1EFE9 25%, #E8E5DD 50%, #F1EFE9 75%);
+  background: linear-gradient(90deg, #F4F4F5 25%, #E4E4E7 50%, #F4F4F5 75%);
   background-size: 200% 100%;
   animation: shimmer 1.8s ease-in-out infinite;
 }
 
 /* === FOCUS RING === */
 *:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--text-primary);
   outline-offset: 2px;
   border-radius: 8px;
 }

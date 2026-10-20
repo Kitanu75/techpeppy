@@ -78,21 +78,21 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       currentUser.username === comment.author?.username);
 
   return (
-    <div className={`relative ${level > 0 ? "ml-3 sm:ml-5 mt-2.5 border-l border-[#E8E5DD] pl-3" : "mt-3"}`}>
+    <div className={`relative ${level > 0 ? "ml-3 sm:ml-5 mt-2.5 border-l border-zinc-200 pl-3" : "mt-3"}`}>
       {/* Comment Header */}
-      <div className="flex items-center gap-2 text-xs text-[#8C8A83] mb-1">
+      <div className="flex items-center gap-2 text-xs text-zinc-500 mb-1">
         <img
           src={comment.author.avatar || `https://api.dicebear.com/7.x/identicon/svg?seed=${comment.author.username}`}
           alt=""
-          className="h-4 w-4 rounded-full object-cover ring-1 ring-[#E8E5DD]"
+          className="h-4 w-4 rounded-full object-cover ring-1 ring-zinc-200"
         />
-        <span className="font-semibold text-[#1C1B18]">{comment.author.name || `u/${comment.author.username}`}</span>
+        <span className="font-semibold text-zinc-950">{comment.author.name || `u/${comment.author.username}`}</span>
         <span>•</span>
         <span suppressHydrationWarning>{formatTimeAgo(comment.createdAt)}</span>
 
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="ml-auto text-[#8C8A83] hover:text-[#1C1B18] cursor-pointer"
+          className="ml-auto text-zinc-400 hover:text-zinc-950 cursor-pointer"
         >
           {collapsed ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
         </button>
@@ -101,12 +101,12 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       {!collapsed && (
         <>
           {/* Comment Body */}
-          <div className="text-xs sm:text-sm text-[#4A4843] leading-relaxed whitespace-pre-line mb-1.5">
+          <div className="text-xs sm:text-sm text-zinc-600 leading-relaxed whitespace-pre-line mb-1.5 font-normal">
             {comment.content}
           </div>
 
           {/* Voting & Actions */}
-          <div className="flex items-center gap-3 text-xs text-[#8C8A83] mb-1.5">
+          <div className="flex items-center gap-3 text-xs text-zinc-500 mb-1.5">
             <div className="flex items-center gap-1">
               <button
                 onClick={() => handleVote(1)}
@@ -114,7 +114,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
               >
                 <ArrowBigUp className={`h-4 w-4 ${userVote === 1 ? "fill-emerald-600" : ""}`} />
               </button>
-              <span className={`text-[11px] font-mono font-bold ${userVote === 1 ? "text-emerald-700" : userVote === -1 ? "text-rose-600" : "text-[#4A4843]"}`}>
+              <span className={`text-[11px] font-mono font-bold ${userVote === 1 ? "text-emerald-700" : userVote === -1 ? "text-rose-600" : "text-zinc-700"}`}>
                 {score}
               </span>
               <button
@@ -127,7 +127,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
 
             <button
               onClick={() => setShowReplyBox(!showReplyBox)}
-              className="flex items-center gap-1 text-[11px] hover:text-emerald-700 transition-colors cursor-pointer"
+              className="flex items-center gap-1 text-[11px] hover:text-zinc-900 transition-colors cursor-pointer font-medium"
             >
               <MessageSquare className="h-3 w-3" />
               <span>Reply</span>
@@ -156,20 +156,20 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 placeholder="Write a reply..."
-                className="w-full rounded-xl border border-[#E8E5DD] bg-[#F8F7F4] p-2 text-xs text-[#1C1B18] placeholder-[#ACA9A2] focus:border-emerald-500 focus:bg-white focus:outline-none"
+                className="w-full rounded-xl border border-zinc-200 bg-zinc-50/70 p-2 text-xs text-zinc-950 placeholder-zinc-400 focus:border-zinc-400 focus:bg-white focus:outline-none"
               />
               <div className="flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowReplyBox(false)}
-                  className="rounded-xl px-3 py-1 text-xs text-[#8C8A83] hover:text-[#1C1B18] cursor-pointer"
+                  className="rounded-xl px-3 py-1 text-xs text-zinc-500 hover:text-zinc-950 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submittingReply}
-                  className="rounded-xl bg-emerald-600 hover:bg-emerald-700 px-3.5 py-1 text-xs font-semibold text-white shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+                  className="rounded-xl bg-zinc-950 hover:bg-zinc-800 px-3.5 py-1 text-xs font-semibold text-white shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
                 >
                   {submittingReply ? "..." : "Reply"}
                 </button>
