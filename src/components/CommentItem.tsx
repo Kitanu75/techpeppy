@@ -7,19 +7,25 @@ import {
   MessageSquare,
   ChevronDown,
   ChevronUp,
+  Trash2,
 } from "lucide-react";
 import { CommentType } from "@/lib/models/types";
+import { SessionUser } from "@/lib/auth";
 
 interface CommentItemProps {
   comment: CommentType;
   onAddReply: (parentId: string, content: string) => Promise<void>;
+  onDeleteComment?: (commentId: string) => Promise<void>;
   level?: number;
+  currentUser?: SessionUser | null;
 }
 
 export const CommentItem: React.FC<CommentItemProps> = ({
   comment,
   onAddReply,
+  onDeleteComment,
   level = 0,
+  currentUser,
 }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [showReplyBox, setShowReplyBox] = useState(false);
@@ -65,22 +71,28 @@ export const CommentItem: React.FC<CommentItemProps> = ({
     return `${Math.floor(diffHours / 24)}d`;
   };
 
+  const canDelete =
+    currentUser &&
+    (currentUser.role === "admin" ||
+      currentUser.id === comment.author?.id ||
+      currentUser.username === comment.author?.username);
+
   return (
-    <div className={`relative ${level > 0 ? "ml-3 sm:ml-5 mt-2.5 border-l border-[#eff3f4] pl-3" : "mt-3"}`}>
+    <div className={`relative ${level > 0 ? "ml-3 sm:ml-5 mt-2.5 border-l border-[#E8E5DD] pl-3" : "mt-3"}`}>
       {/* Comment Header */}
-      <div className="flex items-center gap-2 text-xs text-[#536471] mb-1">
+      <div className="flex items-center gap-2 text-xs text-[#8C8A83] mb-1">
         <img
           src={comment.author.avatar || `https://api.dicebear.com/7.x/identicon/svg?seed=${comment.author.username}`}
           alt=""
-          className="h-4 w-4 rounded-full object-cover"
+          className="h-4 w-4 rounded-full object-cover ring-1 ring-[#E8E5DD]"
         />
-        <span className="font-semibold text-[#0f1419]">u/{comment.author.username}</span>
+        <span className="font-semibold text-[#1C1B18]">{comment.author.name || `u/${comment.author.username}`}</span>
         <span>•</span>
-        <span>{formatTimeAgo(comment.createdAt)}</span>
+        <span suppressHydrationWarning>{formatTimeAgo(comment.createdAt)}</span>
 
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="ml-auto text-[#536471] hover:text-[#0f1419] cursor-pointer"
+          className="ml-auto text-[#8C8A83] hover:text-[#1C1B18] cursor-pointer"
         >
           {collapsed ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
         </button>
@@ -89,37 +101,51 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       {!collapsed && (
         <>
           {/* Comment Body */}
-          <div className="text-xs sm:text-sm text-[#374151] leading-relaxed whitespace-pre-line mb-1.5">
+          <div className="text-xs sm:text-sm text-[#4A4843] leading-relaxed whitespace-pre-line mb-1.5">
             {comment.content}
           </div>
 
           {/* Voting & Actions */}
-          <div className="flex items-center gap-3 text-xs text-[#536471] mb-1.5">
+          <div className="flex items-center gap-3 text-xs text-[#8C8A83] mb-1.5">
             <div className="flex items-center gap-1">
               <button
                 onClick={() => handleVote(1)}
-                className={`p-0.5 hover:text-[#0f1419] transition-colors cursor-pointer ${userVote === 1 ? "text-[#0f1419]" : ""}`}
+                className={`p-0.5 hover:text-emerald-700 transition-colors cursor-pointer ${userVote === 1 ? "text-emerald-700" : ""}`}
               >
-                <ArrowBigUp className={`h-4 w-4 ${userVote === 1 ? "fill-[#0f1419]" : ""}`} />
+                <ArrowBigUp className={`h-4 w-4 ${userVote === 1 ? "fill-emerald-600" : ""}`} />
               </button>
-              <span className={`text-[11px] font-mono font-bold ${userVote === 1 ? "text-[#0f1419]" : userVote === -1 ? "text-blue-600" : "text-[#536471]"}`}>
+              <span className={`text-[11px] font-mono font-bold ${userVote === 1 ? "text-emerald-700" : userVote === -1 ? "text-rose-600" : "text-[#4A4843]"}`}>
                 {score}
               </span>
               <button
                 onClick={() => handleVote(-1)}
-                className={`p-0.5 hover:text-blue-600 transition-colors cursor-pointer ${userVote === -1 ? "text-blue-600" : ""}`}
+                className={`p-0.5 hover:text-rose-600 transition-colors cursor-pointer ${userVote === -1 ? "text-rose-600" : ""}`}
               >
-                <ArrowBigDown className={`h-4 w-4 ${userVote === -1 ? "fill-blue-600" : ""}`} />
+                <ArrowBigDown className={`h-4 w-4 ${userVote === -1 ? "fill-rose-600" : ""}`} />
               </button>
             </div>
 
             <button
               onClick={() => setShowReplyBox(!showReplyBox)}
-              className="flex items-center gap-1 text-[11px] hover:text-[#0f1419] transition-colors cursor-pointer"
+              className="flex items-center gap-1 text-[11px] hover:text-emerald-700 transition-colors cursor-pointer"
             >
               <MessageSquare className="h-3 w-3" />
               <span>Reply</span>
             </button>
+
+            {canDelete && onDeleteComment && (
+              <button
+                onClick={() => {
+                  if (confirm("Delete this comment?")) {
+                    onDeleteComment(comment.id);
+                  }
+                }}
+                title="Delete comment"
+                className="ml-auto text-rose-400 hover:text-rose-600 cursor-pointer p-0.5"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
+            )}
           </div>
 
           {/* Inline Reply Input */}
@@ -130,20 +156,20 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 placeholder="Write a reply..."
-                className="w-full rounded-xl border border-[#e1e8ed] bg-[#f7f9fa] p-2 text-xs text-[#0f1419] placeholder-[#8b98a5] focus:border-[#0f1419] focus:bg-white focus:outline-none"
+                className="w-full rounded-xl border border-[#E8E5DD] bg-[#F8F7F4] p-2 text-xs text-[#1C1B18] placeholder-[#ACA9A2] focus:border-emerald-500 focus:bg-white focus:outline-none"
               />
               <div className="flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowReplyBox(false)}
-                  className="rounded-full px-3 py-1 text-xs text-[#536471] hover:text-[#0f1419] cursor-pointer"
+                  className="rounded-xl px-3 py-1 text-xs text-[#8C8A83] hover:text-[#1C1B18] cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submittingReply}
-                  className="rounded-full bg-[#0f1419] hover:bg-[#272c30] px-3.5 py-1 text-xs font-semibold text-white transition-colors cursor-pointer disabled:opacity-50"
+                  className="rounded-xl bg-emerald-600 hover:bg-emerald-700 px-3.5 py-1 text-xs font-semibold text-white shadow-xs transition-colors cursor-pointer disabled:opacity-50"
                 >
                   {submittingReply ? "..." : "Reply"}
                 </button>
@@ -159,7 +185,9 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                   key={reply.id}
                   comment={reply}
                   onAddReply={onAddReply}
+                  onDeleteComment={onDeleteComment}
                   level={level + 1}
+                  currentUser={currentUser}
                 />
               ))}
             </div>

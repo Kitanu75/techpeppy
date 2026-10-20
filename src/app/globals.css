@@ -1,43 +1,99 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8f9fa;
-  --foreground: #0f1419;
-  --card-bg: #ffffff;
-  --card-border: #e5e7eb;
-  --text-primary: #0f1419;
-  --text-muted: #536471;
+  /* === WARM STONE & EMERALD — 2026 Premium Design System === */
+
+  /* Canvas & Surfaces */
+  --bg-canvas: #F8F7F4;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #FAFAF8;
+  --bg-subtle: #F1EFE9;
+  --bg-warm: #EDE9E0;
+
+  /* Typography */
+  --text-primary: #1C1B18;
+  --text-secondary: #4A4843;
+  --text-muted: #8C8A83;
+  --text-dim: #ACA9A2;
+
+  /* Accent - Emerald */
+  --accent: #059669;
+  --accent-hover: #047857;
+  --accent-light: #ECFDF5;
+  --accent-glow: rgba(5, 150, 105, 0.08);
+
+  /* Borders */
+  --border: #E8E5DD;
+  --border-hover: #D4D0C7;
+  --border-accent: rgba(5, 150, 105, 0.25);
+
+  /* Semantic */
+  --success: #059669;
+  --danger: #DC2626;
+  --warning: #D97706;
+  --info: #2563EB;
+
+  /* Motion */
+  --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 180ms;
+  --duration-normal: 250ms;
+}
+
+html {
+  color-scheme: light;
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-geist-sans), 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
 }
 
-/* Custom sleek scrollbar */
+/* === SCROLLBAR === */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f8f9fa;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: var(--border);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: var(--border-hover);
 }
 
-/* Smooth transitions */
+/* === SMOOTH TRANSITIONS === */
 * {
-  transition-property: color, background-color, border-color, opacity;
-  transition-duration: 150ms;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-property: color, background-color, border-color, opacity, box-shadow, transform;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-smooth);
+}
+
+/* === SKELETON LOADING === */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-pulse {
+  background: linear-gradient(90deg, #F1EFE9 25%, #E8E5DD 50%, #F1EFE9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* === FOCUS RING === */
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 8px;
 }

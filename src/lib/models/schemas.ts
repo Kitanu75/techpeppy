@@ -24,7 +24,7 @@ const CommunitySchema = new Schema(
     name: { type: String, required: true },
     slug: { type: String, required: true, unique: true },
     description: { type: String, required: true },
-    icon: { type: String, default: "🔥" },
+    icon: { type: String, default: "layers" },
     bannerColor: { type: String, default: "#2563EB" },
     membersCount: { type: Number, default: 1 },
     rules: [{ type: String }],

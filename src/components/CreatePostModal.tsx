@@ -108,21 +108,21 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="relative w-full max-w-xl rounded-2xl border border-[#eff3f4] bg-white shadow-xl p-5 sm:p-6 my-8 text-[#0f1419]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto">
+      <div className="relative w-full max-w-xl rounded-2xl border border-[#E8E5DD] bg-white shadow-2xl p-5 sm:p-6 my-8 text-[#1C1B18]">
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-[#eff3f4] mb-4">
-          <h2 className="text-base font-bold text-[#0f1419]">Create a Post</h2>
+        <div className="flex items-center justify-between pb-3 border-b border-[#E8E5DD] mb-4">
+          <h2 className="text-base font-bold text-[#1C1B18]">Create a Post</h2>
           <button
             onClick={onClose}
-            className="rounded-full p-1 text-[#536471] hover:bg-[#f7f9fa] hover:text-[#0f1419] transition-colors cursor-pointer"
+            className="rounded-full p-1 text-[#8C8A83] hover:bg-[#F1EFE9] hover:text-[#1C1B18] transition-colors cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {error && (
-          <div className="mb-4 flex items-center gap-2 rounded-xl bg-red-50 border border-red-200 p-2.5 text-xs text-red-600">
+          <div className="mb-4 flex items-center gap-2 rounded-xl bg-rose-50 border border-rose-200 p-2.5 text-xs text-rose-700">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
           </div>
@@ -130,29 +130,29 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
 
         {/* Channel Selector */}
         <div className="mb-3.5">
-          <label className="block text-xs font-medium text-[#536471] mb-1">Select Channel</label>
+          <label className="block text-xs font-medium text-[#8C8A83] mb-1">Select Channel</label>
           <select
             value={selectedCommunity}
             onChange={(e) => setSelectedCommunity(e.target.value)}
-            className="w-full rounded-xl border border-[#e1e8ed] bg-[#f7f9fa] px-3 py-2 text-xs sm:text-sm text-[#0f1419] focus:border-[#0f1419] focus:bg-white focus:outline-none cursor-pointer"
+            className="w-full rounded-xl border border-[#E8E5DD] bg-[#F8F7F4] px-3 py-2 text-xs sm:text-sm text-[#1C1B18] focus:border-emerald-500 focus:bg-white focus:outline-none cursor-pointer"
           >
             {communities.map((c) => (
               <option key={c.slug} value={c.slug}>
-                {c.icon} {c.name}
+                {c.name} (t/{c.slug})
               </option>
             ))}
           </select>
         </div>
 
         {/* Post Type Selector */}
-        <div className="flex rounded-xl bg-[#f7f9fa] p-1 border border-[#eff3f4] mb-4">
+        <div className="flex rounded-xl bg-[#F1EFE9] p-1 border border-[#E8E5DD] mb-4">
           <button
             type="button"
             onClick={() => setPostType("text")}
-            className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-1.5 text-xs font-semibold transition-all cursor-pointer ${
               postType === "text"
-                ? "bg-[#0f1419] text-white"
-                : "text-[#536471] hover:text-[#0f1419]"
+                ? "bg-emerald-600 text-white shadow-xs"
+                : "text-[#4A4843] hover:text-[#1C1B18]"
             }`}
           >
             <FileText className="h-3.5 w-3.5" />
@@ -162,10 +162,10 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
           <button
             type="button"
             onClick={() => setPostType("image")}
-            className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-1.5 text-xs font-semibold transition-all cursor-pointer ${
               postType === "image"
-                ? "bg-[#0f1419] text-white"
-                : "text-[#536471] hover:text-[#0f1419]"
+                ? "bg-emerald-600 text-white shadow-xs"
+                : "text-[#4A4843] hover:text-[#1C1B18]"
             }`}
           >
             <ImageIcon className="h-3.5 w-3.5" />
@@ -175,39 +175,39 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-3.5">
           <div>
-            <label className="block text-xs font-medium text-[#536471] mb-1">Title</label>
+            <label className="block text-xs font-medium text-[#8C8A83] mb-1">Title</label>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Post title"
-              className="w-full rounded-xl border border-[#e1e8ed] bg-[#f7f9fa] px-3.5 py-2 text-xs sm:text-sm text-[#0f1419] placeholder-[#8b98a5] focus:border-[#0f1419] focus:bg-white focus:outline-none"
+              className="w-full rounded-xl border border-[#E8E5DD] bg-[#F8F7F4] px-3.5 py-2 text-xs sm:text-sm text-[#1C1B18] placeholder-[#ACA9A2] focus:border-emerald-500 focus:bg-white focus:outline-none"
             />
           </div>
 
           {postType === "image" && (
-            <div className="space-y-2 rounded-xl border border-[#eff3f4] bg-[#f7f9fa] p-3">
-              <label className="block text-xs font-medium text-[#536471]">Photo URL</label>
+            <div className="space-y-2 rounded-xl border border-[#E8E5DD] bg-[#F8F7F4] p-3">
+              <label className="block text-xs font-medium text-[#8C8A83]">Photo URL</label>
               <div className="flex gap-2">
                 <input
                   type="url"
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
                   placeholder="https://... direct image link"
-                  className="flex-1 rounded-xl border border-[#e1e8ed] bg-white px-3 py-1.5 text-xs text-[#0f1419] placeholder-[#8b98a5] focus:border-[#0f1419] focus:outline-none"
+                  className="flex-1 rounded-xl border border-[#E8E5DD] bg-white px-3 py-1.5 text-xs text-[#1C1B18] placeholder-[#ACA9A2] focus:border-emerald-500 focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={handleAddImage}
-                  className="rounded-xl bg-[#0f1419] hover:bg-[#272c30] px-3 py-1.5 text-xs font-semibold text-white transition-colors cursor-pointer"
+                  className="rounded-xl bg-[#1C1B18] hover:bg-black px-3 py-1.5 text-xs font-semibold text-white transition-colors cursor-pointer"
                 >
                   Add
                 </button>
               </div>
 
               {/* Sample Presets */}
-              <div className="flex items-center gap-1.5 pt-1 text-[11px] text-[#536471]">
+              <div className="flex items-center gap-1.5 pt-1 text-[11px] text-[#8C8A83]">
                 <span>Sample photo:</span>
                 <button
                   type="button"
@@ -216,7 +216,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
                       "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80"
                     )
                   }
-                  className="text-[#0f1419] font-medium hover:underline cursor-pointer"
+                  className="text-emerald-700 font-medium hover:underline cursor-pointer"
                 >
                   Workspace
                 </button>
@@ -228,7 +228,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
                       "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=1200&q=80"
                     )
                   }
-                  className="text-[#0f1419] font-medium hover:underline cursor-pointer"
+                  className="text-emerald-700 font-medium hover:underline cursor-pointer"
                 >
                   Hardware
                 </button>
@@ -240,13 +240,13 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
                   {imageList.map((img, idx) => (
                     <div
                       key={idx}
-                      className="relative aspect-video overflow-hidden rounded-lg bg-neutral-100 border border-[#eff3f4]"
+                      className="relative aspect-video overflow-hidden rounded-lg bg-[#F1EFE9] border border-[#E8E5DD]"
                     >
                       <img src={img} alt="" className="h-full w-full object-cover" />
                       <button
                         type="button"
                         onClick={() => handleRemoveImage(idx)}
-                        className="absolute top-1 right-1 rounded bg-black/60 p-1 text-red-300 hover:text-white"
+                        className="absolute top-1 right-1 rounded bg-black/60 p-1 text-rose-300 hover:text-white"
                       >
                         <Trash2 className="h-3 w-3" />
                       </button>
@@ -258,7 +258,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
           )}
 
           <div>
-            <label className="block text-xs font-medium text-[#536471] mb-1">
+            <label className="block text-xs font-medium text-[#8C8A83] mb-1">
               {postType === "image" ? "Description" : "Content"}
             </label>
             <textarea
@@ -266,33 +266,33 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="What are the details?"
-              className="w-full rounded-xl border border-[#e1e8ed] bg-[#f7f9fa] p-3 text-xs sm:text-sm text-[#0f1419] placeholder-[#8b98a5] focus:border-[#0f1419] focus:bg-white focus:outline-none resize-none"
+              className="w-full rounded-xl border border-[#E8E5DD] bg-[#F8F7F4] p-3 text-xs sm:text-sm text-[#1C1B18] placeholder-[#ACA9A2] focus:border-emerald-500 focus:bg-white focus:outline-none resize-none"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#536471] mb-1">Tags</label>
+            <label className="block text-xs font-medium text-[#8C8A83] mb-1">Tags</label>
             <input
               type="text"
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
               placeholder="Architecture, NextJS"
-              className="w-full rounded-xl border border-[#e1e8ed] bg-[#f7f9fa] px-3.5 py-1.5 text-xs text-[#0f1419] placeholder-[#8b98a5] focus:border-[#0f1419] focus:bg-white focus:outline-none"
+              className="w-full rounded-xl border border-[#E8E5DD] bg-[#F8F7F4] px-3.5 py-1.5 text-xs text-[#1C1B18] placeholder-[#ACA9A2] focus:border-emerald-500 focus:bg-white focus:outline-none"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#eff3f4]">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#E8E5DD]">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full px-4 py-1.5 text-xs font-semibold text-[#536471] hover:text-[#0f1419] transition-colors cursor-pointer"
+              className="rounded-xl px-4 py-1.5 text-xs font-semibold text-[#8C8A83] hover:text-[#1C1B18] transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-full bg-[#0f1419] hover:bg-[#272c30] px-5 py-1.5 text-xs font-semibold text-white transition-colors cursor-pointer disabled:opacity-50"
+              className="rounded-xl bg-emerald-600 hover:bg-emerald-700 px-5 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors cursor-pointer disabled:opacity-50"
             >
               {submitting ? "Posting..." : "Post"}
             </button>

@@ -4,6 +4,7 @@ export interface AuthorInfo {
   username: string;
   avatar: string;
   karma: number;
+  role?: string;
 }
 
 export interface CommunityType {

@@ -35,7 +35,13 @@ async function ensureSeeded() {
         "flagship-camera-sensor-comparison-1-inch-vs-periscope",
         "techpeppy-community-guidelines-welcome",
       ];
-      await PostModel.deleteMany({ slug: { $in: mockSlugs } });
+      for (const post of INITIAL_POSTS) {
+        await PostModel.findOneAndUpdate(
+          { slug: post.slug },
+          { $set: { title: post.title, content: post.content, tags: post.tags, images: post.images } },
+          { upsert: true }
+        );
+      }
     } catch (e) {
       console.warn("DB seed notice:", e);
     }
@@ -387,4 +393,18 @@ export async function addComment(postId: string, content: string, parentId: stri
   }
 
   return newComment;
+}
+
+export async function deleteComment(commentId: string): Promise<boolean> {
+  const db = await connectToDatabase();
+  if (db) {
+    try {
+      await CommentModel.findByIdAndDelete(commentId);
+      await CommentModel.deleteMany({ parentId: commentId });
+    } catch (e) {
+      console.warn("DB deleteComment error:", e);
+    }
+  }
+  memoryComments = memoryComments.filter((c) => c.id !== commentId && c.parentId !== commentId);
+  return true;
 }

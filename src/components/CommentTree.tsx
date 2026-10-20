@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { MessageSquare, Send } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { CommentType } from "@/lib/models/types";
 import { CommentItem } from "./CommentItem";
 import { SessionUser } from "@/lib/auth";
@@ -127,8 +127,24 @@ export const CommentTree: React.FC<CommentTreeProps> = ({
     }
   };
 
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      const res = await fetch(`/api/posts/${postId}/comments?commentId=${commentId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        await fetchComments();
+      } else {
+        alert(data.error || "Failed to delete comment");
+      }
+    } catch (e) {
+      console.error("Error deleting comment:", e);
+    }
+  };
+
   return (
-    <div className="mt-5 pt-4 border-t border-[#eff3f4]">
+    <div className="mt-5 pt-4 border-t border-[#E8E5DD]">
       {/* Top Comment Input */}
       <div className="mb-5">
         <form onSubmit={handleAddTopComment} className="space-y-2">
@@ -137,13 +153,13 @@ export const CommentTree: React.FC<CommentTreeProps> = ({
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             placeholder="Write a comment..."
-            className="w-full rounded-xl border border-[#e1e8ed] bg-[#f7f9fa] p-3 text-xs sm:text-sm text-[#0f1419] placeholder-[#8b98a5] focus:border-[#0f1419] focus:bg-white focus:outline-none resize-none"
+            className="w-full rounded-xl border border-[#E8E5DD] bg-[#F8F7F4] p-3 text-xs sm:text-sm text-[#1C1B18] placeholder-[#ACA9A2] focus:border-emerald-500 focus:bg-white focus:outline-none resize-none"
           />
           <div className="flex justify-end">
             <button
               type="submit"
               disabled={submitting || !commentText.trim()}
-              className="rounded-full bg-[#0f1419] hover:bg-[#272c30] px-4 py-1.5 text-xs font-semibold text-white disabled:opacity-50 transition-colors cursor-pointer"
+              className="rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 text-xs font-semibold text-white shadow-xs disabled:opacity-50 transition-colors cursor-pointer"
             >
               {submitting ? "Posting..." : "Reply"}
             </button>
@@ -153,17 +169,17 @@ export const CommentTree: React.FC<CommentTreeProps> = ({
 
       {/* Comments List */}
       <div className="space-y-3">
-        <div className="flex items-center gap-2 pb-2 border-b border-[#eff3f4] text-xs font-semibold text-[#536471]">
-          <MessageSquare className="h-3.5 w-3.5" />
+        <div className="flex items-center gap-2 pb-2 border-b border-[#E8E5DD] text-xs font-semibold text-[#1C1B18]">
+          <MessageSquare className="h-3.5 w-3.5 text-emerald-600" />
           <span>Comments ({comments.length})</span>
         </div>
 
         {loading ? (
-          <div className="py-4 text-center text-xs text-[#536471]">
+          <div className="py-4 text-center text-xs text-[#8C8A83]">
             Loading...
           </div>
         ) : comments.length === 0 ? (
-          <div className="py-4 text-center text-xs text-[#536471]">
+          <div className="py-4 text-center text-xs text-[#8C8A83]">
             No comments yet.
           </div>
         ) : (
@@ -172,6 +188,8 @@ export const CommentTree: React.FC<CommentTreeProps> = ({
               key={comment.id}
               comment={comment}
               onAddReply={handleAddReply}
+              onDeleteComment={handleDeleteComment}
+              currentUser={currentUser}
             />
           ))
         )}
