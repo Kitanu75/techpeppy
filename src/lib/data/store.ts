@@ -36,11 +36,56 @@ async function ensureSeeded() {
         "techpeppy-community-guidelines-welcome",
       ];
       for (const post of INITIAL_POSTS) {
-        await PostModel.findOneAndUpdate(
+        const postDoc = await PostModel.findOneAndUpdate(
           { slug: post.slug },
-          { $set: { title: post.title, content: post.content, tags: post.tags, images: post.images } },
-          { upsert: true }
+          { 
+            $set: { 
+              title: post.title, 
+              content: post.content, 
+              tags: post.tags, 
+              images: post.images,
+              commentsCount: post.commentsCount 
+            } 
+          },
+          { upsert: true, new: true }
         );
+
+        if (postDoc) {
+          const existingComments = await CommentModel.countDocuments({
+            $or: [{ postId: postDoc._id.toString() }, { postId: post.id }, { postId: post.slug }]
+          });
+
+          if (existingComments === 0) {
+            const commentsToSeed = INITIAL_COMMENTS.filter(
+              (c) => c.postId === post.id || c.postId === post.slug
+            );
+            for (const c of commentsToSeed) {
+              const rootDoc = await CommentModel.create({
+                postId: postDoc._id.toString(),
+                parentId: null,
+                content: c.content,
+                author: c.author,
+                score: c.score,
+                upvotes: c.upvotes,
+                downvotes: c.downvotes,
+              });
+
+              if (c.replies && c.replies.length > 0) {
+                for (const r of c.replies) {
+                  await CommentModel.create({
+                    postId: postDoc._id.toString(),
+                    parentId: rootDoc._id.toString(),
+                    content: r.content,
+                    author: r.author,
+                    score: r.score,
+                    upvotes: r.upvotes,
+                    downvotes: r.downvotes,
+                  });
+                }
+              }
+            }
+          }
+        }
       }
     } catch (e) {
       console.warn("DB seed notice:", e);
@@ -303,9 +348,40 @@ export async function clearAllPostsAndComments(): Promise<void> {
 
 export async function getComments(postId: string): Promise<CommentType[]> {
   const db = await connectToDatabase();
+
+  // Collect all possible identifiers for this post (ObjectId string, slug, memory ID)
+  const identifiers = new Set<string>([postId]);
+
   if (db) {
     try {
-      const docs = await CommentModel.find({ postId }).lean();
+      await ensureSeeded();
+
+      let postDoc: any = null;
+      try {
+        postDoc = await PostModel.findById(postId).lean();
+      } catch {
+        // Not a standard MongoDB ObjectId
+      }
+      if (!postDoc) {
+        postDoc = await PostModel.findOne({ slug: postId }).lean();
+      }
+
+      if (postDoc) {
+        identifiers.add(postDoc._id.toString());
+        if (postDoc.slug) identifiers.add(postDoc.slug);
+        const memPost = memoryPosts.find((p) => p.slug === postDoc.slug);
+        if (memPost) identifiers.add(memPost.id);
+      } else {
+        const memPost = memoryPosts.find((p) => p.id === postId || p.slug === postId);
+        if (memPost) {
+          identifiers.add(memPost.id);
+          identifiers.add(memPost.slug);
+        }
+      }
+
+      const idArray = Array.from(identifiers);
+      const docs = await CommentModel.find({ postId: { $in: idArray } }).lean();
+
       if (docs.length > 0) {
         const flat: CommentType[] = docs.map((d: any) => ({
           id: d._id.toString(),
@@ -340,10 +416,24 @@ export async function getComments(postId: string): Promise<CommentType[]> {
     }
   }
 
-  return memoryComments.filter((c) => c.postId === postId);
+  // Fallback to memory comments
+  const memPost = memoryPosts.find((p) => p.id === postId || p.slug === postId);
+  if (memPost) {
+    identifiers.add(memPost.id);
+    identifiers.add(memPost.slug);
+  }
+  const idArray = Array.from(identifiers);
+
+  const matched = memoryComments.filter((c) => idArray.includes(c.postId));
+  return matched;
 }
 
-export async function addComment(postId: string, content: string, parentId: string | null = null, author: any): Promise<CommentType> {
+export async function addComment(
+  postId: string,
+  content: string,
+  parentId: string | null = null,
+  author: any
+): Promise<CommentType> {
   const newComment: CommentType = {
     id: "comm_" + Date.now(),
     postId,
@@ -370,14 +460,20 @@ export async function addComment(postId: string, content: string, parentId: stri
         _id: undefined,
       });
       newComment.id = doc._id.toString();
-      await PostModel.findByIdAndUpdate(postId, { $inc: { commentsCount: 1 } });
+
+      // Increment commentsCount in MongoDB by id or slug
+      try {
+        await PostModel.findByIdAndUpdate(postId, { $inc: { commentsCount: 1 } });
+      } catch {
+        await PostModel.findOneAndUpdate({ slug: postId }, { $inc: { commentsCount: 1 } });
+      }
     } catch (e) {
       console.warn("DB addComment error:", e);
     }
   }
 
   // Update in memory
-  const post = memoryPosts.find((p) => p.id === postId);
+  const post = memoryPosts.find((p) => p.id === postId || p.slug === postId);
   if (post) post.commentsCount += 1;
 
   if (parentId) {
@@ -399,8 +495,17 @@ export async function deleteComment(commentId: string): Promise<boolean> {
   const db = await connectToDatabase();
   if (db) {
     try {
-      await CommentModel.findByIdAndDelete(commentId);
-      await CommentModel.deleteMany({ parentId: commentId });
+      const commentDoc = await CommentModel.findById(commentId);
+      if (commentDoc) {
+        const pId = commentDoc.postId;
+        await CommentModel.findByIdAndDelete(commentId);
+        await CommentModel.deleteMany({ parentId: commentId });
+        try {
+          await PostModel.findByIdAndUpdate(pId, { $inc: { commentsCount: -1 } });
+        } catch {
+          await PostModel.findOneAndUpdate({ slug: pId }, { $inc: { commentsCount: -1 } });
+        }
+      }
     } catch (e) {
       console.warn("DB deleteComment error:", e);
     }

@@ -171,7 +171,20 @@ export const CommentTree: React.FC<CommentTreeProps> = ({
       <div className="space-y-3">
         <div className="flex items-center gap-2 pb-2 border-b border-zinc-100 text-xs font-semibold text-zinc-950 font-mono">
           <MessageSquare className="h-3.5 w-3.5 text-emerald-600" />
-          <span>Comments ({comments.length})</span>
+          <span>
+            Comments (
+            {(() => {
+              const countDeep = (list: CommentType[]): number => {
+                let cnt = list.length;
+                for (const c of list) {
+                  if (c.replies && c.replies.length > 0) cnt += countDeep(c.replies);
+                }
+                return cnt;
+              };
+              return countDeep(comments);
+            })()}
+            )
+          </span>
         </div>
 
         {loading ? (
