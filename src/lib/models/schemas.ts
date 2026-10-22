@@ -97,3 +97,16 @@ export const CommunityModel = models.Community || model("Community", CommunitySc
 export const PostModel = models.Post || model("Post", PostSchema);
 export const CommentModel = models.Comment || model("Comment", CommentSchema);
 export const VoteModel = models.Vote || model("Vote", VoteSchema);
+
+// Password Reset Token Schema (15-minute TTL)
+const PasswordResetTokenSchema = new Schema(
+  {
+    email: { type: String, required: true, lowercase: true, trim: true, index: true },
+    code: { type: String, required: true },
+    expiresAt: { type: Date, required: true, expires: 0 },
+  },
+  { timestamps: true }
+);
+
+export const PasswordResetTokenModel =
+  models.PasswordResetToken || model("PasswordResetToken", PasswordResetTokenSchema);
