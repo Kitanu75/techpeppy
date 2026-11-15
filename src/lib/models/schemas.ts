@@ -110,3 +110,38 @@ const PasswordResetTokenSchema = new Schema(
 
 export const PasswordResetTokenModel =
   models.PasswordResetToken || model("PasswordResetToken", PasswordResetTokenSchema);
+
+// Subscription Schema (Tracks publication & channel/author subscriptions)
+const SubscriptionSchema = new Schema(
+  {
+    subscriberId: { type: String, required: true, index: true },
+    subscriberEmail: { type: String, lowercase: true, trim: true, default: "" },
+    subscriberName: { type: String, required: true },
+    subscriberAvatar: { type: String, default: "" },
+    targetUserId: { type: String, required: true, default: "usr_sandeep_author", index: true },
+    channelSlug: { type: String, default: "publication", index: true },
+  },
+  { timestamps: true }
+);
+SubscriptionSchema.index({ subscriberId: 1, targetUserId: 1, channelSlug: 1 }, { unique: true });
+
+// Notification Schema (Real-time subscriber & activity alerts)
+const NotificationSchema = new Schema(
+  {
+    recipientId: { type: String, required: true, index: true },
+    actorId: { type: String, required: true, index: true },
+    actorName: { type: String, required: true },
+    actorAvatar: { type: String, default: "" },
+    type: { type: String, enum: ["NEW_SUBSCRIBER"], default: "NEW_SUBSCRIBER" },
+    channelSlug: { type: String, default: "publication" },
+    message: { type: String, required: true },
+    isRead: { type: Boolean, default: false, index: true },
+  },
+  { timestamps: true }
+);
+NotificationSchema.index({ recipientId: 1, createdAt: -1 });
+
+export const SubscriptionModel =
+  models.Subscription || model("Subscription", SubscriptionSchema);
+export const NotificationModel =
+  models.Notification || model("Notification", NotificationSchema);

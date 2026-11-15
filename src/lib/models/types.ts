@@ -51,3 +51,27 @@ export interface PostType {
   isPinned?: boolean;
   createdAt: string;
 }
+
+export interface SubscriptionType {
+  id: string;
+  subscriberId: string;
+  subscriberEmail?: string;
+  subscriberName: string;
+  subscriberAvatar: string;
+  targetUserId: string;
+  channelSlug?: string;
+  createdAt: string;
+}
+
+export interface NotificationType {
+  id: string;
+  recipientId: string;
+  actorId: string;
+  actorName: string;
+  actorAvatar: string;
+  type: "NEW_SUBSCRIBER";
+  channelSlug?: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+}

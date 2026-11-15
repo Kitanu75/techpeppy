@@ -103,3 +103,79 @@ export async function sendPasswordResetEmail(toEmail: string, code: string, name
     text: `Your TechPeppy password reset code is: ${code}. It expires in 15 minutes.`,
   });
 }
+
+function escapeHtml(input: string): string {
+  return input
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+export async function sendNewSubscriberAlert({
+  subscriberName,
+  subscriberEmail,
+  channelSlug,
+  targetEmail,
+}: {
+  subscriberName: string;
+  subscriberEmail?: string;
+  channelSlug?: string;
+  targetEmail?: string;
+}) {
+  const safeName = escapeHtml(subscriberName || "Engineering Reader");
+  const safeEmail = subscriberEmail ? escapeHtml(subscriberEmail) : "In-app reader";
+  const scopeLabel =
+    channelSlug && channelSlug !== "publication" ? `t/${escapeHtml(channelSlug)}` : "TechPeppy Publication";
+
+  const recipient = targetEmail || process.env.EMAIL_USER || "admin@techpeppy.com";
+
+  // Optional Webhook Dispatch
+  const webhookUrl = process.env.SUBSCRIBER_WEBHOOK_URL;
+  if (webhookUrl) {
+    try {
+      await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          event: "NEW_SUBSCRIBER",
+          subscriberName,
+          subscriberEmail: subscriberEmail || null,
+          channelSlug: channelSlug || "publication",
+          timestamp: new Date().toISOString(),
+        }),
+      });
+    } catch (webhookErr) {
+      console.warn("Subscriber webhook dispatch failed:", webhookErr);
+    }
+  }
+
+  return sendEmail({
+    to: recipient,
+    subject: `New Subscriber: ${subscriberName} → ${scopeLabel}`,
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; background: #F6F5F0; color: #141413; padding: 28px; border-radius: 8px; border: 1px solid #E2E0D8;">
+        <div style="margin-bottom: 18px;">
+          <span style="background: #141413; color: #F6F5F0; font-family: monospace; font-weight: 700; font-size: 12px; padding: 4px 8px; border-radius: 4px;">TP</span>
+          <span style="font-family: monospace; font-size: 12px; color: #686763; margin-left: 8px;">SUBSCRIBER EVENT</span>
+        </div>
+        <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 8px 0; color: #141413;">
+          ${safeName} subscribed to ${scopeLabel}
+        </h2>
+        <p style="font-size: 13px; line-height: 1.6; color: #686763; margin: 0 0 18px 0;">
+          A new reader subscribed on TechPeppy. An in-app notification has been delivered to your Notification Bell.
+        </p>
+        <div style="background: #FFFFFF; border: 1px solid #E2E0D8; border-radius: 6px; padding: 14px; font-family: monospace; font-size: 12px; color: #141413;">
+          <div><strong>Subscriber:</strong> ${safeName}</div>
+          <div style="margin-top: 4px;"><strong>Contact:</strong> ${safeEmail}</div>
+          <div style="margin-top: 4px;"><strong>Channel:</strong> ${scopeLabel}</div>
+        </div>
+        <p style="font-size: 11px; color: #8A8A95; margin: 18px 0 0 0; font-family: monospace;">
+          © 2026 TechPeppy • Engineering Publication
+        </p>
+      </div>
+    `,
+    text: `${subscriberName} (${subscriberEmail || "In-app reader"}) subscribed to ${scopeLabel} on TechPeppy.`,
+  });
+}

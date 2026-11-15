@@ -1,41 +1,42 @@
 @import "tailwindcss";
 
 :root {
-  /* === ZINC PRECISION DESIGN SYSTEM (Vercel Geist + Linear Grade) === */
+  /* === TECHPEPPY EDITORIAL PRECISION SYSTEM === */
 
-  /* Canvas & Surfaces */
-  --bg-canvas: #FAFAFA;
+  /* Canvas & Surfaces (Warm Editorial Paper) */
+  --bg-canvas: #F6F5F0;
   --bg-card: #FFFFFF;
-  --bg-card-hover: #FDFDFD;
-  --bg-subtle: #F4F4F5;
-  --bg-muted: #E4E4E7;
+  --bg-card-hover: #FDFCFA;
+  --bg-subtle: #EFECE6;
+  --bg-muted: #E2E0D8;
 
   /* Typography */
-  --text-primary: #09090B;
-  --text-secondary: #52525B;
-  --text-muted: #71717A;
-  --text-dim: #A1A1AA;
+  --text-primary: #141413;
+  --text-secondary: #686763;
+  --text-muted: #8A8A95;
+  --text-dim: #9C9A93;
 
-  /* Accent - Precision Emerald */
-  --accent: #059669;
-  --accent-hover: #047857;
+  /* Intentional Accents */
+  --accent: #10B981;
+  --accent-hover: #059669;
   --accent-light: #ECFDF5;
-  --accent-glow: rgba(5, 150, 105, 0.12);
+  --accent-glow: rgba(16, 185, 129, 0.12);
+  --signal-orange: #FF5500;
 
-  /* Primary Action Button (Obsidian) */
-  --btn-primary: #09090B;
+  /* Primary Action Button */
+  --btn-primary: #141413;
   --btn-primary-hover: #27272A;
   --btn-primary-text: #FFFFFF;
 
-  /* Borders */
-  --border: #E4E4E7;
-  --border-hover: #D4D4D8;
-  --border-accent: rgba(5, 150, 105, 0.3);
+  /* Hairline Structural Borders */
+  --border: #E2E0D8;
+  --border-hover: #CFCBC0;
+  --border-accent: rgba(16, 185, 129, 0.35);
 
   /* Semantic */
-  --success: #059669;
-  --danger: #E11D48;
-  --warning: #F59E0B;
+  --success: #10B981;
+  --danger: #DC2626;
+  --warning: #D97706;
   --info: #2563EB;
 
   /* Motion */
@@ -58,6 +59,10 @@ body {
   line-height: 1.6;
 }
 
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
 /* === MINIMAL SCROLLBAR === */
 ::-webkit-scrollbar {
   width: 6px;
@@ -69,12 +74,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D4D4D8;
+  background: #CFCBC0;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #A1A1AA;
+  background: #A8A396;
 }
 
 /* === SMOOTH TRANSITIONS === */
@@ -86,11 +91,11 @@ body {
 
 /* === CARD SHADOWS === */
 .shadow-card {
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02), 0 0 0 1px var(--border);
+  box-shadow: 0 1px 2px 0 rgba(20, 20, 19, 0.03), 0 0 0 1px var(--border);
 }
 
 .shadow-card-hover {
-  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.04), 0 0 0 1px var(--border-hover);
+  box-shadow: 0 4px 12px 0 rgba(20, 20, 19, 0.05), 0 0 0 1px var(--border-hover);
 }
 
 /* === SKELETON LOADING === */
@@ -100,7 +105,7 @@ body {
 }
 
 .skeleton-pulse {
-  background: linear-gradient(90deg, #F4F4F5 25%, #E4E4E7 50%, #F4F4F5 75%);
+  background: linear-gradient(90deg, #EFECE6 25%, #E2E0D8 50%, #EFECE6 75%);
   background-size: 200% 100%;
   animation: shimmer 1.8s ease-in-out infinite;
 }
@@ -109,5 +114,5 @@ body {
 *:focus-visible {
   outline: 2px solid var(--text-primary);
   outline-offset: 2px;
-  border-radius: 8px;
+  border-radius: 6px;
 }

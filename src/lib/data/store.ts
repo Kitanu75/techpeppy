@@ -1,12 +1,28 @@
 import connectToDatabase from "../mongodb";
-import { CommunityModel, PostModel, CommentModel, VoteModel } from "../models/schemas";
+import {
+  CommunityModel,
+  PostModel,
+  CommentModel,
+  VoteModel,
+  SubscriptionModel,
+  NotificationModel,
+} from "../models/schemas";
 import { INITIAL_COMMUNITIES, INITIAL_POSTS, INITIAL_COMMENTS } from "./initialData";
-import { PostType, CommunityType, CommentType } from "../models/types";
+import {
+  PostType,
+  CommunityType,
+  CommentType,
+  SubscriptionType,
+  NotificationType,
+} from "../models/types";
+import { sendNewSubscriberAlert } from "../email";
 
 // In-memory fallback state for zero-config preview
 let memoryPosts: PostType[] = [...INITIAL_POSTS];
 let memoryCommunities: CommunityType[] = [...INITIAL_COMMUNITIES];
 let memoryComments: CommentType[] = [...INITIAL_COMMENTS];
+let memorySubscriptions: SubscriptionType[] = [];
+let memoryNotifications: NotificationType[] = [];
 
 // Global seed tracker
 let isSeeded = false;
@@ -512,4 +528,405 @@ export async function deleteComment(commentId: string): Promise<boolean> {
   }
   memoryComments = memoryComments.filter((c) => c.id !== commentId && c.parentId !== commentId);
   return true;
+}
+
+// ==========================================
+// SUBSCRIPTIONS & REAL-TIME NOTIFICATIONS
+// ==========================================
+
+interface RawSubscriptionDoc {
+  _id?: { toString(): string };
+  id?: string;
+  subscriberId: string;
+  subscriberEmail?: string;
+  subscriberName: string;
+  subscriberAvatar?: string;
+  targetUserId?: string;
+  channelSlug?: string;
+  createdAt?: Date | string;
+}
+
+interface RawNotificationDoc {
+  _id?: { toString(): string };
+  id?: string;
+  recipientId: string;
+  actorId: string;
+  actorName: string;
+  actorAvatar?: string;
+  type?: "NEW_SUBSCRIBER";
+  channelSlug?: string;
+  message: string;
+  isRead?: boolean;
+  createdAt?: Date | string;
+}
+
+function mapSubscriptionDoc(d: RawSubscriptionDoc): SubscriptionType {
+  return {
+    id: d._id ? d._id.toString() : d.id || "",
+    subscriberId: d.subscriberId,
+    subscriberEmail: d.subscriberEmail || undefined,
+    subscriberName: d.subscriberName,
+    subscriberAvatar: d.subscriberAvatar || "",
+    targetUserId: d.targetUserId || "usr_sandeep_author",
+    channelSlug: d.channelSlug || "publication",
+    createdAt: d.createdAt ? new Date(d.createdAt).toISOString() : new Date().toISOString(),
+  };
+}
+
+function mapNotificationDoc(d: RawNotificationDoc): NotificationType {
+  return {
+    id: d._id ? d._id.toString() : d.id || "",
+    recipientId: d.recipientId,
+    actorId: d.actorId,
+    actorName: d.actorName,
+    actorAvatar: d.actorAvatar || "",
+    type: d.type || "NEW_SUBSCRIBER",
+    channelSlug: d.channelSlug || "publication",
+    message: d.message,
+    isRead: Boolean(d.isRead),
+    createdAt: d.createdAt ? new Date(d.createdAt).toISOString() : new Date().toISOString(),
+  };
+}
+
+export async function getSubscriptions(subscriberId?: string): Promise<{
+  subscriptions: SubscriptionType[];
+  subscribedChannels: string[];
+  totalSubscribers: number;
+}> {
+  const db = await connectToDatabase();
+  if (db) {
+    try {
+      const allDocs = (await SubscriptionModel.find({}).lean()) as unknown as RawSubscriptionDoc[];
+      const uniqueSubscribers = new Set(allDocs.map((d) => d.subscriberId));
+
+      const filteredDocs = subscriberId
+        ? allDocs.filter((d) => d.subscriberId === subscriberId)
+        : [];
+      const subscriptions = filteredDocs.map(mapSubscriptionDoc);
+      const subscribedChannels = Array.from(
+        new Set(subscriptions.map((s) => s.channelSlug || "publication"))
+      );
+
+      return {
+        subscriptions,
+        subscribedChannels,
+        totalSubscribers: uniqueSubscribers.size,
+      };
+    } catch (err) {
+      console.warn("Error fetching subscriptions from MongoDB, using fallback:", err);
+    }
+  }
+
+  const uniqueMemSubscribers = new Set(memorySubscriptions.map((s) => s.subscriberId));
+  const subscriptions = subscriberId
+    ? memorySubscriptions.filter((s) => s.subscriberId === subscriberId)
+    : [];
+  const subscribedChannels = Array.from(
+    new Set(subscriptions.map((s) => s.channelSlug || "publication"))
+  );
+
+  return {
+    subscriptions,
+    subscribedChannels,
+    totalSubscribers: uniqueMemSubscribers.size,
+  };
+}
+
+export async function createOrToggleSubscription(params: {
+  subscriberId: string;
+  subscriberEmail?: string;
+  subscriberName: string;
+  subscriberAvatar?: string;
+  targetUserId?: string;
+  channelSlug?: string;
+  action?: "subscribe" | "unsubscribe" | "toggle";
+}): Promise<{
+  subscribed: boolean;
+  subscription?: SubscriptionType;
+  notification?: NotificationType;
+  totalSubscribers: number;
+}> {
+  const subscriberId = params.subscriberId;
+  const targetUserId = params.targetUserId || "usr_sandeep_author";
+  const channelSlug = params.channelSlug || "publication";
+  const subscriberName = params.subscriberName || "Engineering Reader";
+  const subscriberEmail = params.subscriberEmail || "";
+  const subscriberAvatar =
+    params.subscriberAvatar ||
+    `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(subscriberId)}`;
+  const action = params.action || "toggle";
+
+  const notificationMessage =
+    channelSlug && channelSlug !== "publication"
+      ? `subscribed to your updates in t/${channelSlug}`
+      : "subscribed to your publication";
+
+  const db = await connectToDatabase();
+  if (db) {
+    try {
+      const existing = (await SubscriptionModel.findOne({
+        subscriberId,
+        targetUserId,
+        channelSlug,
+      }).lean()) as unknown as RawSubscriptionDoc | null;
+
+      if (existing && (action === "unsubscribe" || action === "toggle")) {
+        await SubscriptionModel.deleteOne({ _id: existing._id });
+        memorySubscriptions = memorySubscriptions.filter(
+          (s) =>
+            !(
+              s.subscriberId === subscriberId &&
+              s.targetUserId === targetUserId &&
+              (s.channelSlug || "publication") === channelSlug
+            )
+        );
+        const allIds = await SubscriptionModel.distinct("subscriberId");
+        return {
+          subscribed: false,
+          totalSubscribers: allIds.length,
+        };
+      }
+
+      if (existing && action === "subscribe") {
+        const allIds = await SubscriptionModel.distinct("subscriberId");
+        return {
+          subscribed: true,
+          subscription: mapSubscriptionDoc(existing),
+          totalSubscribers: allIds.length,
+        };
+      }
+
+      // Create new subscription
+      const subDoc = (await SubscriptionModel.findOneAndUpdate(
+        { subscriberId, targetUserId, channelSlug },
+        {
+          $set: {
+            subscriberEmail,
+            subscriberName,
+            subscriberAvatar,
+          },
+        },
+        { upsert: true, new: true }
+      ).lean()) as unknown as RawSubscriptionDoc;
+
+      const subscription = mapSubscriptionDoc(subDoc);
+
+      // Idempotent notification: avoid duplicate notification rows on rapid unsubscribe/re-subscribe
+      const existingNotif = await NotificationModel.findOne({
+        recipientId: targetUserId,
+        actorId: subscriberId,
+        type: "NEW_SUBSCRIBER",
+        channelSlug,
+      });
+
+      let notifDoc: RawNotificationDoc;
+      if (existingNotif) {
+        existingNotif.actorName = subscriberName;
+        existingNotif.actorAvatar = subscriberAvatar;
+        existingNotif.message = notificationMessage;
+        existingNotif.isRead = false;
+        existingNotif.createdAt = new Date();
+        await existingNotif.save();
+        notifDoc = existingNotif.toObject() as unknown as RawNotificationDoc;
+      } else {
+        const createdDoc = await NotificationModel.create({
+          recipientId: targetUserId,
+          actorId: subscriberId,
+          actorName: subscriberName,
+          actorAvatar: subscriberAvatar,
+          type: "NEW_SUBSCRIBER",
+          channelSlug,
+          message: notificationMessage,
+          isRead: false,
+        });
+        notifDoc = createdDoc.toObject() as unknown as RawNotificationDoc;
+      }
+
+      const notification = mapNotificationDoc(notifDoc);
+      const allIds = await SubscriptionModel.distinct("subscriberId");
+
+      // Fire non-blocking email/webhook alert
+      sendNewSubscriberAlert({
+        subscriberName,
+        subscriberEmail: subscriberEmail || undefined,
+        channelSlug,
+      }).catch(() => {});
+
+      return {
+        subscribed: true,
+        subscription,
+        notification,
+        totalSubscribers: allIds.length,
+      };
+    } catch (err) {
+      console.warn("DB createOrToggleSubscription error, falling back to memory:", err);
+    }
+  }
+
+  // In-memory resilient fallback
+  const existingIdx = memorySubscriptions.findIndex(
+    (s) =>
+      s.subscriberId === subscriberId &&
+      s.targetUserId === targetUserId &&
+      (s.channelSlug || "publication") === channelSlug
+  );
+
+  if (existingIdx !== -1 && (action === "unsubscribe" || action === "toggle")) {
+    memorySubscriptions.splice(existingIdx, 1);
+    const uniqueMem = new Set(memorySubscriptions.map((s) => s.subscriberId));
+    return {
+      subscribed: false,
+      totalSubscribers: uniqueMem.size,
+    };
+  }
+
+  if (existingIdx !== -1 && action === "subscribe") {
+    const uniqueMem = new Set(memorySubscriptions.map((s) => s.subscriberId));
+    return {
+      subscribed: true,
+      subscription: memorySubscriptions[existingIdx],
+      totalSubscribers: uniqueMem.size,
+    };
+  }
+
+  const newSub: SubscriptionType = {
+    id: `sub_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    subscriberId,
+    subscriberEmail: subscriberEmail || undefined,
+    subscriberName,
+    subscriberAvatar,
+    targetUserId,
+    channelSlug,
+    createdAt: new Date().toISOString(),
+  };
+  memorySubscriptions.unshift(newSub);
+
+  // Idempotent in-memory notification
+  const existingNotifIdx = memoryNotifications.findIndex(
+    (n) =>
+      n.recipientId === targetUserId &&
+      n.actorId === subscriberId &&
+      n.type === "NEW_SUBSCRIBER" &&
+      (n.channelSlug || "publication") === channelSlug
+  );
+
+  let notification: NotificationType;
+  if (existingNotifIdx !== -1) {
+    notification = {
+      ...memoryNotifications[existingNotifIdx],
+      actorName: subscriberName,
+      actorAvatar: subscriberAvatar,
+      message: notificationMessage,
+      isRead: false,
+      createdAt: new Date().toISOString(),
+    };
+    memoryNotifications.splice(existingNotifIdx, 1);
+    memoryNotifications.unshift(notification);
+  } else {
+    notification = {
+      id: `notif_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      recipientId: targetUserId,
+      actorId: subscriberId,
+      actorName: subscriberName,
+      actorAvatar: subscriberAvatar,
+      type: "NEW_SUBSCRIBER",
+      channelSlug,
+      message: notificationMessage,
+      isRead: false,
+      createdAt: new Date().toISOString(),
+    };
+    memoryNotifications.unshift(notification);
+  }
+
+  const uniqueMem = new Set(memorySubscriptions.map((s) => s.subscriberId));
+
+  sendNewSubscriberAlert({
+    subscriberName,
+    subscriberEmail: subscriberEmail || undefined,
+    channelSlug,
+  }).catch(() => {});
+
+  return {
+    subscribed: true,
+    subscription: newSub,
+    notification,
+    totalSubscribers: uniqueMem.size,
+  };
+}
+
+export async function getNotifications(recipientId?: string): Promise<{
+  notifications: NotificationType[];
+  unreadCount: number;
+}> {
+  const db = await connectToDatabase();
+  if (db) {
+    try {
+      const filter = recipientId
+        ? { $or: [{ recipientId }, { recipientId: "usr_sandeep_author" }] }
+        : {};
+      const docs = (await NotificationModel.find(filter)
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .lean()) as unknown as RawNotificationDoc[];
+      const notifications = docs.map(mapNotificationDoc);
+      const unreadCount = notifications.filter((n) => !n.isRead).length;
+      return { notifications, unreadCount };
+    } catch (err) {
+      console.warn("DB getNotifications error, using fallback:", err);
+    }
+  }
+
+  const filtered = recipientId
+    ? memoryNotifications.filter(
+        (n) => n.recipientId === recipientId || n.recipientId === "usr_sandeep_author"
+      )
+    : [...memoryNotifications];
+
+  filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const sliced = filtered.slice(0, 50);
+  return {
+    notifications: sliced,
+    unreadCount: sliced.filter((n) => !n.isRead).length,
+  };
+}
+
+export async function markNotificationsRead(params: {
+  notificationId?: string;
+  markAll?: boolean;
+  recipientId?: string;
+}): Promise<{
+  notifications: NotificationType[];
+  unreadCount: number;
+}> {
+  const { notificationId, markAll, recipientId } = params;
+  const db = await connectToDatabase();
+
+  if (db) {
+    try {
+      if (markAll) {
+        const filter = recipientId
+          ? { $or: [{ recipientId }, { recipientId: "usr_sandeep_author" }], isRead: false }
+          : { isRead: false };
+        await NotificationModel.updateMany(filter, { $set: { isRead: true } });
+      } else if (notificationId) {
+        await NotificationModel.findByIdAndUpdate(notificationId, { $set: { isRead: true } });
+      }
+    } catch (err) {
+      console.warn("DB markNotificationsRead error:", err);
+    }
+  }
+
+  if (markAll) {
+    memoryNotifications = memoryNotifications.map((n) =>
+      !recipientId || n.recipientId === recipientId || n.recipientId === "usr_sandeep_author"
+        ? { ...n, isRead: true }
+        : n
+    );
+  } else if (notificationId) {
+    memoryNotifications = memoryNotifications.map((n) =>
+      n.id === notificationId ? { ...n, isRead: true } : n
+    );
+  }
+
+  return getNotifications(recipientId);
 }
