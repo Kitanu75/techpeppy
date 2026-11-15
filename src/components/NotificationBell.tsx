@@ -1,18 +1,29 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Bell, CheckCheck, UserPlus, Sparkles } from "lucide-react";
+import { Bell, CheckCheck, UserPlus, Sparkles, MessageSquare, FileText } from "lucide-react";
 import { NotificationType } from "@/lib/models/types";
 import { SessionUser } from "@/lib/auth";
 
 interface NotificationBellProps {
   currentUser?: SessionUser | null;
   onSelectChannel?: (slug: string) => void;
+  onSelectPostById?: (postId: string) => void;
+}
+
+function readStoredClientId(): string {
+  if (typeof window === "undefined") return "";
+  try {
+    return window.localStorage.getItem("techpeppy_client_id") || "";
+  } catch {
+    return "";
+  }
 }
 
 export const NotificationBell: React.FC<NotificationBellProps> = ({
   currentUser,
   onSelectChannel,
+  onSelectPostById,
 }) => {
   const [notifications, setNotifications] = useState<NotificationType[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -21,9 +32,16 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
   const [nowMs, setNowMs] = useState<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const buildNotificationsUrl = useCallback(() => {
+    const cid = readStoredClientId();
+    return cid
+      ? `/api/notifications?clientId=${encodeURIComponent(cid)}`
+      : "/api/notifications";
+  }, []);
+
   const syncNotifications = useCallback(async () => {
     try {
-      const res = await fetch("/api/notifications", { cache: "no-store" });
+      const res = await fetch(buildNotificationsUrl(), { cache: "no-store" });
       if (!res.ok) return;
       const data = await res.json();
       if (data.success && Array.isArray(data.notifications)) {
@@ -35,14 +53,14 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [buildNotificationsUrl]);
 
   // Initial load + 5-second polling + window focus sync
   useEffect(() => {
     let active = true;
     const runFetch = async () => {
       try {
-        const res = await fetch("/api/notifications", { cache: "no-store" });
+        const res = await fetch(buildNotificationsUrl(), { cache: "no-store" });
         if (!res.ok || !active) return;
         const data = await res.json();
         if (active && data.success && Array.isArray(data.notifications)) {
@@ -71,9 +89,9 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
       clearInterval(interval);
       window.removeEventListener("focus", onFocus);
     };
-  }, [currentUser?.id]);
+  }, [buildNotificationsUrl, currentUser?.id]);
 
-  // Instant 0ms update when a local subscription happens in the same session
+  // Instant 0ms update when a local subscription or comment happens in the same session
   useEffect(() => {
     const handleCreated = (event: Event) => {
       const customEvent = event as CustomEvent<NotificationType | undefined>;
@@ -128,10 +146,11 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
 
     try {
+      const cid = readStoredClientId();
       const res = await fetch("/api/notifications", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ markAll: true }),
+        body: JSON.stringify({ markAll: true, clientId: cid || undefined }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -152,14 +171,21 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
       );
 
       try {
+        const cid = readStoredClientId();
         await fetch("/api/notifications", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ notificationId: notif.id }),
+          body: JSON.stringify({ notificationId: notif.id, clientId: cid || undefined }),
         });
       } catch (err) {
         console.error("Mark read failed:", err);
       }
+    }
+
+    if (notif.postId && onSelectPostById) {
+      onSelectPostById(notif.postId);
+      setIsOpen(false);
+      return;
     }
 
     if (notif.channelSlug && notif.channelSlug !== "publication" && onSelectChannel) {
@@ -189,6 +215,16 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
       return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
     }
     return name.slice(0, 2).toUpperCase();
+  };
+
+  const renderTypeIcon = (type: NotificationType["type"]) => {
+    if (type === "POST_COMMENT") {
+      return <MessageSquare className="h-3 w-3 text-[#10B981]" />;
+    }
+    if (type === "NEW_POST") {
+      return <FileText className="h-3 w-3 text-[#141413]" />;
+    }
+    return <UserPlus className="h-3 w-3 text-[#FF5500]" />;
   };
 
   return (
@@ -295,10 +331,10 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                   <Sparkles className="h-4 w-4" />
                 </div>
                 <p className="text-xs font-semibold text-[#141413]">
-                  No subscriber alerts yet
+                  No notifications yet
                 </p>
-                <p className="mt-1 text-[11px] text-[#686763] max-w-[230px] mx-auto leading-relaxed">
-                  New publication and channel subscriptions will appear here in real time.
+                <p className="mt-1 text-[11px] text-[#686763] max-w-[240px] mx-auto leading-relaxed">
+                  Subscribe to any post or channel to receive instant updates when new replies or posts arrive.
                 </p>
               </div>
             ) : (
@@ -332,11 +368,14 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                       <span className="text-[#686763]">{notif.message}</span>
                     </p>
 
-                    <div className="mt-1.5 flex items-center gap-2">
-                      <span className="inline-flex items-center rounded border border-[#E2E0D8] bg-[#F6F5F0] px-1.5 py-0.5 font-mono text-[10px] font-medium text-[#141413]">
-                        {notif.channelSlug && notif.channelSlug !== "publication"
-                          ? `t/${notif.channelSlug}`
-                          : "publication"}
+                    <div className="mt-1.5 flex items-center gap-2 flex-wrap">
+                      <span className="inline-flex items-center gap-1 rounded border border-[#E2E0D8] bg-[#F6F5F0] px-1.5 py-0.5 font-mono text-[10px] font-medium text-[#141413]">
+                        {renderTypeIcon(notif.type)}
+                        <span>
+                          {notif.channelSlug && notif.channelSlug !== "publication"
+                            ? `t/${notif.channelSlug}`
+                            : "publication"}
+                        </span>
                       </span>
                       <span
                         suppressHydrationWarning

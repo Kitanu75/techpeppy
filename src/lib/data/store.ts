@@ -281,6 +281,12 @@ export async function createPost(newPost: Omit<PostType, "id" | "score" | "upvot
   }
 
   memoryPosts.unshift(created);
+
+  // Notify publication & channel subscribers about the new post
+  notifyChannelSubscribersOnNewPost(created).catch((err) =>
+    console.warn("notifyChannelSubscribersOnNewPost error:", err)
+  );
+
   return created;
 }
 
@@ -504,6 +510,11 @@ export async function addComment(
     memoryComments.push(newComment);
   }
 
+  // Notify post subscribers and post author about the new comment (Reddit-style)
+  notifyPostSubscribersOnComment(postId, newComment).catch((err) =>
+    console.warn("notifyPostSubscribersOnComment error:", err)
+  );
+
   return newComment;
 }
 
@@ -543,6 +554,8 @@ interface RawSubscriptionDoc {
   subscriberAvatar?: string;
   targetUserId?: string;
   channelSlug?: string;
+  postId?: string;
+  postTitle?: string;
   createdAt?: Date | string;
 }
 
@@ -553,11 +566,33 @@ interface RawNotificationDoc {
   actorId: string;
   actorName: string;
   actorAvatar?: string;
-  type?: "NEW_SUBSCRIBER";
+  type?: "NEW_SUBSCRIBER" | "POST_COMMENT" | "NEW_POST";
   channelSlug?: string;
+  postId?: string;
+  postTitle?: string;
   message: string;
   isRead?: boolean;
   createdAt?: Date | string;
+}
+
+let subscriptionIndexMigrated = false;
+
+async function ensureSubscriptionIndexes() {
+  if (subscriptionIndexMigrated) return;
+  subscriptionIndexMigrated = true;
+  try {
+    await SubscriptionModel.collection
+      .dropIndex("subscriberId_1_targetUserId_1_channelSlug_1")
+      .catch(() => {});
+  } catch {
+    // Ignore if index does not exist
+  }
+}
+
+function truncateText(text: string, maxLen: number): string {
+  const clean = text.trim();
+  if (clean.length <= maxLen) return clean;
+  return `${clean.slice(0, maxLen - 1)}…`;
 }
 
 function mapSubscriptionDoc(d: RawSubscriptionDoc): SubscriptionType {
@@ -569,6 +604,8 @@ function mapSubscriptionDoc(d: RawSubscriptionDoc): SubscriptionType {
     subscriberAvatar: d.subscriberAvatar || "",
     targetUserId: d.targetUserId || "usr_sandeep_author",
     channelSlug: d.channelSlug || "publication",
+    postId: d.postId || undefined,
+    postTitle: d.postTitle || undefined,
     createdAt: d.createdAt ? new Date(d.createdAt).toISOString() : new Date().toISOString(),
   };
 }
@@ -582,6 +619,8 @@ function mapNotificationDoc(d: RawNotificationDoc): NotificationType {
     actorAvatar: d.actorAvatar || "",
     type: d.type || "NEW_SUBSCRIBER",
     channelSlug: d.channelSlug || "publication",
+    postId: d.postId || undefined,
+    postTitle: d.postTitle || undefined,
     message: d.message,
     isRead: Boolean(d.isRead),
     createdAt: d.createdAt ? new Date(d.createdAt).toISOString() : new Date().toISOString(),
@@ -591,6 +630,7 @@ function mapNotificationDoc(d: RawNotificationDoc): NotificationType {
 export async function getSubscriptions(subscriberId?: string): Promise<{
   subscriptions: SubscriptionType[];
   subscribedChannels: string[];
+  subscribedPosts: string[];
   totalSubscribers: number;
 }> {
   const db = await connectToDatabase();
@@ -604,12 +644,20 @@ export async function getSubscriptions(subscriberId?: string): Promise<{
         : [];
       const subscriptions = filteredDocs.map(mapSubscriptionDoc);
       const subscribedChannels = Array.from(
-        new Set(subscriptions.map((s) => s.channelSlug || "publication"))
+        new Set(
+          subscriptions
+            .filter((s) => !s.postId)
+            .map((s) => s.channelSlug || "publication")
+        )
+      );
+      const subscribedPosts = Array.from(
+        new Set(subscriptions.map((s) => s.postId).filter((id): id is string => Boolean(id)))
       );
 
       return {
         subscriptions,
         subscribedChannels,
+        subscribedPosts,
         totalSubscribers: uniqueSubscribers.size,
       };
     } catch (err) {
@@ -622,12 +670,20 @@ export async function getSubscriptions(subscriberId?: string): Promise<{
     ? memorySubscriptions.filter((s) => s.subscriberId === subscriberId)
     : [];
   const subscribedChannels = Array.from(
-    new Set(subscriptions.map((s) => s.channelSlug || "publication"))
+    new Set(
+      subscriptions
+        .filter((s) => !s.postId)
+        .map((s) => s.channelSlug || "publication")
+    )
+  );
+  const subscribedPosts = Array.from(
+    new Set(subscriptions.map((s) => s.postId).filter((id): id is string => Boolean(id)))
   );
 
   return {
     subscriptions,
     subscribedChannels,
+    subscribedPosts,
     totalSubscribers: uniqueMemSubscribers.size,
   };
 }
@@ -639,6 +695,8 @@ export async function createOrToggleSubscription(params: {
   subscriberAvatar?: string;
   targetUserId?: string;
   channelSlug?: string;
+  postId?: string;
+  postTitle?: string;
   action?: "subscribe" | "unsubscribe" | "toggle";
 }): Promise<{
   subscribed: boolean;
@@ -649,6 +707,8 @@ export async function createOrToggleSubscription(params: {
   const subscriberId = params.subscriberId;
   const targetUserId = params.targetUserId || "usr_sandeep_author";
   const channelSlug = params.channelSlug || "publication";
+  const postId = params.postId ? params.postId.trim() : "";
+  const postTitle = params.postTitle ? params.postTitle.trim() : "";
   const subscriberName = params.subscriberName || "Engineering Reader";
   const subscriberEmail = params.subscriberEmail || "";
   const subscriberAvatar =
@@ -656,18 +716,25 @@ export async function createOrToggleSubscription(params: {
     `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(subscriberId)}`;
   const action = params.action || "toggle";
 
-  const notificationMessage =
-    channelSlug && channelSlug !== "publication"
+  const shortPostTitle = postTitle ? truncateText(postTitle, 52) : "";
+  const notificationMessage = postId
+    ? shortPostTitle
+      ? `subscribed to your post "${shortPostTitle}" in t/${channelSlug}`
+      : `subscribed to your post in t/${channelSlug}`
+    : channelSlug && channelSlug !== "publication"
       ? `subscribed to your updates in t/${channelSlug}`
       : "subscribed to your publication";
 
   const db = await connectToDatabase();
   if (db) {
     try {
+      await ensureSubscriptionIndexes();
+
       const existing = (await SubscriptionModel.findOne({
         subscriberId,
         targetUserId,
         channelSlug,
+        postId,
       }).lean()) as unknown as RawSubscriptionDoc | null;
 
       if (existing && (action === "unsubscribe" || action === "toggle")) {
@@ -677,7 +744,8 @@ export async function createOrToggleSubscription(params: {
             !(
               s.subscriberId === subscriberId &&
               s.targetUserId === targetUserId &&
-              (s.channelSlug || "publication") === channelSlug
+              (s.channelSlug || "publication") === channelSlug &&
+              (s.postId || "") === postId
             )
         );
         const allIds = await SubscriptionModel.distinct("subscriberId");
@@ -698,12 +766,13 @@ export async function createOrToggleSubscription(params: {
 
       // Create new subscription
       const subDoc = (await SubscriptionModel.findOneAndUpdate(
-        { subscriberId, targetUserId, channelSlug },
+        { subscriberId, targetUserId, channelSlug, postId },
         {
           $set: {
             subscriberEmail,
             subscriberName,
             subscriberAvatar,
+            postTitle,
           },
         },
         { upsert: true, new: true }
@@ -717,12 +786,14 @@ export async function createOrToggleSubscription(params: {
         actorId: subscriberId,
         type: "NEW_SUBSCRIBER",
         channelSlug,
+        postId,
       });
 
       let notifDoc: RawNotificationDoc;
       if (existingNotif) {
         existingNotif.actorName = subscriberName;
         existingNotif.actorAvatar = subscriberAvatar;
+        existingNotif.postTitle = postTitle;
         existingNotif.message = notificationMessage;
         existingNotif.isRead = false;
         existingNotif.createdAt = new Date();
@@ -736,6 +807,8 @@ export async function createOrToggleSubscription(params: {
           actorAvatar: subscriberAvatar,
           type: "NEW_SUBSCRIBER",
           channelSlug,
+          postId,
+          postTitle,
           message: notificationMessage,
           isRead: false,
         });
@@ -749,7 +822,7 @@ export async function createOrToggleSubscription(params: {
       sendNewSubscriberAlert({
         subscriberName,
         subscriberEmail: subscriberEmail || undefined,
-        channelSlug,
+        channelSlug: postId ? `${channelSlug} (${shortPostTitle || postId})` : channelSlug,
       }).catch(() => {});
 
       return {
@@ -768,7 +841,8 @@ export async function createOrToggleSubscription(params: {
     (s) =>
       s.subscriberId === subscriberId &&
       s.targetUserId === targetUserId &&
-      (s.channelSlug || "publication") === channelSlug
+      (s.channelSlug || "publication") === channelSlug &&
+      (s.postId || "") === postId
   );
 
   if (existingIdx !== -1 && (action === "unsubscribe" || action === "toggle")) {
@@ -797,6 +871,8 @@ export async function createOrToggleSubscription(params: {
     subscriberAvatar,
     targetUserId,
     channelSlug,
+    postId: postId || undefined,
+    postTitle: postTitle || undefined,
     createdAt: new Date().toISOString(),
   };
   memorySubscriptions.unshift(newSub);
@@ -807,7 +883,8 @@ export async function createOrToggleSubscription(params: {
       n.recipientId === targetUserId &&
       n.actorId === subscriberId &&
       n.type === "NEW_SUBSCRIBER" &&
-      (n.channelSlug || "publication") === channelSlug
+      (n.channelSlug || "publication") === channelSlug &&
+      (n.postId || "") === postId
   );
 
   let notification: NotificationType;
@@ -816,6 +893,7 @@ export async function createOrToggleSubscription(params: {
       ...memoryNotifications[existingNotifIdx],
       actorName: subscriberName,
       actorAvatar: subscriberAvatar,
+      postTitle: postTitle || undefined,
       message: notificationMessage,
       isRead: false,
       createdAt: new Date().toISOString(),
@@ -831,6 +909,8 @@ export async function createOrToggleSubscription(params: {
       actorAvatar: subscriberAvatar,
       type: "NEW_SUBSCRIBER",
       channelSlug,
+      postId: postId || undefined,
+      postTitle: postTitle || undefined,
       message: notificationMessage,
       isRead: false,
       createdAt: new Date().toISOString(),
@@ -843,7 +923,7 @@ export async function createOrToggleSubscription(params: {
   sendNewSubscriberAlert({
     subscriberName,
     subscriberEmail: subscriberEmail || undefined,
-    channelSlug,
+    channelSlug: postId ? `${channelSlug} (${shortPostTitle || postId})` : channelSlug,
   }).catch(() => {});
 
   return {
@@ -854,16 +934,216 @@ export async function createOrToggleSubscription(params: {
   };
 }
 
-export async function getNotifications(recipientId?: string): Promise<{
-  notifications: NotificationType[];
-  unreadCount: number;
-}> {
+async function dispatchActivityNotifications(params: {
+  recipientIds: string[];
+  actorId: string;
+  actorName: string;
+  actorAvatar: string;
+  type: "POST_COMMENT" | "NEW_POST";
+  channelSlug: string;
+  postId: string;
+  postTitle: string;
+  message: string;
+}) {
+  const uniqueRecipients = Array.from(
+    new Set(params.recipientIds.filter((rid) => Boolean(rid) && rid !== params.actorId))
+  );
+  if (uniqueRecipients.length === 0) return;
+
   const db = await connectToDatabase();
   if (db) {
     try {
-      const filter = recipientId
-        ? { $or: [{ recipientId }, { recipientId: "usr_sandeep_author" }] }
-        : {};
+      await NotificationModel.insertMany(
+        uniqueRecipients.map((recipientId) => ({
+          recipientId,
+          actorId: params.actorId,
+          actorName: params.actorName,
+          actorAvatar: params.actorAvatar,
+          type: params.type,
+          channelSlug: params.channelSlug,
+          postId: params.postId,
+          postTitle: params.postTitle,
+          message: params.message,
+          isRead: false,
+        }))
+      );
+      return;
+    } catch (err) {
+      console.warn("DB dispatchActivityNotifications error, using fallback:", err);
+    }
+  }
+
+  for (const recipientId of uniqueRecipients) {
+    memoryNotifications.unshift({
+      id: `notif_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      recipientId,
+      actorId: params.actorId,
+      actorName: params.actorName,
+      actorAvatar: params.actorAvatar,
+      type: params.type,
+      channelSlug: params.channelSlug,
+      postId: params.postId,
+      postTitle: params.postTitle,
+      message: params.message,
+      isRead: false,
+      createdAt: new Date().toISOString(),
+    });
+  }
+}
+
+async function notifyPostSubscribersOnComment(postId: string, comment: CommentType) {
+  let targetPost: PostType | null =
+    memoryPosts.find((p) => p.id === postId || p.slug === postId) || null;
+  const postIdentifiers = new Set<string>([postId]);
+
+  const db = await connectToDatabase();
+  if (db) {
+    try {
+      let postDoc: Record<string, unknown> | null = null;
+      try {
+        postDoc = (await PostModel.findById(postId).lean()) as unknown as Record<string, unknown> | null;
+      } catch {
+        // Ignore invalid ObjectId
+      }
+      if (!postDoc) {
+        postDoc = (await PostModel.findOne({ slug: postId }).lean()) as unknown as Record<
+          string,
+          unknown
+        > | null;
+      }
+      if (postDoc) {
+        const docId = (postDoc._id as { toString(): string }).toString();
+        postIdentifiers.add(docId);
+        if (typeof postDoc.slug === "string") postIdentifiers.add(postDoc.slug);
+        if (!targetPost) {
+          targetPost = {
+            id: docId,
+            title: String(postDoc.title || ""),
+            slug: String(postDoc.slug || ""),
+            content: String(postDoc.content || ""),
+            images: [],
+            postType: "text",
+            communitySlug: String(postDoc.communitySlug || "software-architecture"),
+            author: (postDoc.author as PostType["author"]) || {
+              id: "usr_sandeep_author",
+              name: "Sandeep Kumar",
+              username: "sandeep",
+              avatar: "",
+              karma: 0,
+            },
+            score: 1,
+            upvotes: 1,
+            downvotes: 0,
+            commentsCount: 0,
+            tags: [],
+            createdAt: new Date().toISOString(),
+          };
+        }
+      }
+    } catch (err) {
+      console.warn("Lookup post for comment notification failed:", err);
+    }
+  }
+
+  if (targetPost) {
+    postIdentifiers.add(targetPost.id);
+    if (targetPost.slug) postIdentifiers.add(targetPost.slug);
+  }
+
+  const idList = Array.from(postIdentifiers);
+  const channelSlug = targetPost?.communitySlug || "software-architecture";
+  const postTitle = targetPost?.title || "this post";
+  const shortTitle = truncateText(postTitle, 44);
+  const shortComment = truncateText(comment.content, 60);
+
+  const recipientIds: string[] = [targetPost?.author?.id || "usr_sandeep_author"];
+
+  if (db) {
+    try {
+      const subs = (await SubscriptionModel.find({
+        $or: [{ postId: { $in: idList } }, { channelSlug, postId: "" }],
+      }).lean()) as unknown as RawSubscriptionDoc[];
+      subs.forEach((s) => recipientIds.push(s.subscriberId));
+    } catch (err) {
+      console.warn("DB subscription lookup for comment failed:", err);
+    }
+  } else {
+    memorySubscriptions
+      .filter(
+        (s) =>
+          (s.postId && idList.includes(s.postId)) ||
+          (!s.postId && s.channelSlug === channelSlug)
+      )
+      .forEach((s) => recipientIds.push(s.subscriberId));
+  }
+
+  await dispatchActivityNotifications({
+    recipientIds,
+    actorId: comment.author?.id || comment.author?.username || "user_commenter",
+    actorName: comment.author?.name || comment.author?.username || "Community Member",
+    actorAvatar: comment.author?.avatar || "",
+    type: "POST_COMMENT",
+    channelSlug,
+    postId: targetPost?.id || postId,
+    postTitle,
+    message: `commented on "${shortTitle}": "${shortComment}"`,
+  });
+}
+
+async function notifyChannelSubscribersOnNewPost(post: PostType) {
+  const recipientIds: string[] = [];
+  const db = await connectToDatabase();
+
+  if (db) {
+    try {
+      const subs = (await SubscriptionModel.find({
+        postId: "",
+        channelSlug: { $in: [post.communitySlug, "publication"] },
+      }).lean()) as unknown as RawSubscriptionDoc[];
+      subs.forEach((s) => recipientIds.push(s.subscriberId));
+    } catch (err) {
+      console.warn("DB subscription lookup for new post failed:", err);
+    }
+  } else {
+    memorySubscriptions
+      .filter(
+        (s) =>
+          !s.postId &&
+          (s.channelSlug === post.communitySlug || s.channelSlug === "publication")
+      )
+      .forEach((s) => recipientIds.push(s.subscriberId));
+  }
+
+  const shortTitle = truncateText(post.title, 54);
+
+  await dispatchActivityNotifications({
+    recipientIds,
+    actorId: post.author?.id || post.author?.username || "usr_sandeep_author",
+    actorName: post.author?.name || post.author?.username || "Author",
+    actorAvatar: post.author?.avatar || "",
+    type: "NEW_POST",
+    channelSlug: post.communitySlug,
+    postId: post.id,
+    postTitle: post.title,
+    message: `published a new post in t/${post.communitySlug}: "${shortTitle}"`,
+  });
+}
+
+export async function getNotifications(
+  recipientId?: string,
+  clientId?: string
+): Promise<{
+  notifications: NotificationType[];
+  unreadCount: number;
+}> {
+  const recipientScope = Array.from(
+    new Set([recipientId, clientId, "usr_sandeep_author"].filter((id): id is string => Boolean(id)))
+  );
+
+  const db = await connectToDatabase();
+  if (db) {
+    try {
+      const filter = recipientScope.length > 0 ? { recipientId: { $in: recipientScope } } : {};
       const docs = (await NotificationModel.find(filter)
         .sort({ createdAt: -1 })
         .limit(50)
@@ -876,11 +1156,10 @@ export async function getNotifications(recipientId?: string): Promise<{
     }
   }
 
-  const filtered = recipientId
-    ? memoryNotifications.filter(
-        (n) => n.recipientId === recipientId || n.recipientId === "usr_sandeep_author"
-      )
-    : [...memoryNotifications];
+  const filtered =
+    recipientScope.length > 0
+      ? memoryNotifications.filter((n) => recipientScope.includes(n.recipientId))
+      : [...memoryNotifications];
 
   filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const sliced = filtered.slice(0, 50);
@@ -894,19 +1173,24 @@ export async function markNotificationsRead(params: {
   notificationId?: string;
   markAll?: boolean;
   recipientId?: string;
+  clientId?: string;
 }): Promise<{
   notifications: NotificationType[];
   unreadCount: number;
 }> {
-  const { notificationId, markAll, recipientId } = params;
+  const { notificationId, markAll, recipientId, clientId } = params;
+  const recipientScope = Array.from(
+    new Set([recipientId, clientId, "usr_sandeep_author"].filter((id): id is string => Boolean(id)))
+  );
   const db = await connectToDatabase();
 
   if (db) {
     try {
       if (markAll) {
-        const filter = recipientId
-          ? { $or: [{ recipientId }, { recipientId: "usr_sandeep_author" }], isRead: false }
-          : { isRead: false };
+        const filter =
+          recipientScope.length > 0
+            ? { recipientId: { $in: recipientScope }, isRead: false }
+            : { isRead: false };
         await NotificationModel.updateMany(filter, { $set: { isRead: true } });
       } else if (notificationId) {
         await NotificationModel.findByIdAndUpdate(notificationId, { $set: { isRead: true } });
@@ -918,7 +1202,7 @@ export async function markNotificationsRead(params: {
 
   if (markAll) {
     memoryNotifications = memoryNotifications.map((n) =>
-      !recipientId || n.recipientId === recipientId || n.recipientId === "usr_sandeep_author"
+      recipientScope.length === 0 || recipientScope.includes(n.recipientId)
         ? { ...n, isRead: true }
         : n
     );
@@ -928,5 +1212,5 @@ export async function markNotificationsRead(params: {
     );
   }
 
-  return getNotifications(recipientId);
+  return getNotifications(recipientId, clientId);
 }

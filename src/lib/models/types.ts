@@ -60,6 +60,8 @@ export interface SubscriptionType {
   subscriberAvatar: string;
   targetUserId: string;
   channelSlug?: string;
+  postId?: string;
+  postTitle?: string;
   createdAt: string;
 }
 
@@ -69,8 +71,10 @@ export interface NotificationType {
   actorId: string;
   actorName: string;
   actorAvatar: string;
-  type: "NEW_SUBSCRIBER";
+  type: "NEW_SUBSCRIBER" | "POST_COMMENT" | "NEW_POST";
   channelSlug?: string;
+  postId?: string;
+  postTitle?: string;
   message: string;
   isRead: boolean;
   createdAt: string;

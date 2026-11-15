@@ -111,7 +111,7 @@ const PasswordResetTokenSchema = new Schema(
 export const PasswordResetTokenModel =
   models.PasswordResetToken || model("PasswordResetToken", PasswordResetTokenSchema);
 
-// Subscription Schema (Tracks publication & channel/author subscriptions)
+// Subscription Schema (Tracks publication, channel & per-post subscriptions)
 const SubscriptionSchema = new Schema(
   {
     subscriberId: { type: String, required: true, index: true },
@@ -120,20 +120,31 @@ const SubscriptionSchema = new Schema(
     subscriberAvatar: { type: String, default: "" },
     targetUserId: { type: String, required: true, default: "usr_sandeep_author", index: true },
     channelSlug: { type: String, default: "publication", index: true },
+    postId: { type: String, default: "", index: true },
+    postTitle: { type: String, default: "" },
   },
   { timestamps: true }
 );
-SubscriptionSchema.index({ subscriberId: 1, targetUserId: 1, channelSlug: 1 }, { unique: true });
+SubscriptionSchema.index(
+  { subscriberId: 1, targetUserId: 1, channelSlug: 1, postId: 1 },
+  { unique: true }
+);
 
-// Notification Schema (Real-time subscriber & activity alerts)
+// Notification Schema (Real-time subscriber & post/comment activity alerts)
 const NotificationSchema = new Schema(
   {
     recipientId: { type: String, required: true, index: true },
     actorId: { type: String, required: true, index: true },
     actorName: { type: String, required: true },
     actorAvatar: { type: String, default: "" },
-    type: { type: String, enum: ["NEW_SUBSCRIBER"], default: "NEW_SUBSCRIBER" },
+    type: {
+      type: String,
+      enum: ["NEW_SUBSCRIBER", "POST_COMMENT", "NEW_POST"],
+      default: "NEW_SUBSCRIBER",
+    },
     channelSlug: { type: String, default: "publication" },
+    postId: { type: String, default: "", index: true },
+    postTitle: { type: String, default: "" },
     message: { type: String, required: true },
     isRead: { type: Boolean, default: false, index: true },
   },

@@ -16,6 +16,7 @@ interface NavbarProps {
   onLogout: () => void;
   openAboutModal?: () => void;
   openContactModal?: () => void;
+  onSelectPostById?: (postId: string) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -28,6 +29,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onLogout,
   openAboutModal,
   openContactModal,
+  onSelectPostById,
 }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -129,7 +131,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {/* Real-Time Notification Bell */}
-          <NotificationBell currentUser={user} onSelectChannel={setActiveCommunity} />
+          <NotificationBell
+            currentUser={user}
+            onSelectChannel={setActiveCommunity}
+            onSelectPostById={onSelectPostById}
+          />
 
           {user ? (
             <div ref={userMenuRef} className="relative">

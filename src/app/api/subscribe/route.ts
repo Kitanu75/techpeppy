@@ -47,6 +47,8 @@ export async function POST(req: NextRequest) {
       subscriberName,
       targetUserId,
       channelSlug,
+      postId,
+      postTitle,
       clientId,
       action,
     } = body || {};
@@ -106,6 +108,14 @@ export async function POST(req: NextRequest) {
         ? targetUserId.trim().slice(0, 80)
         : "usr_sandeep_author";
 
+    const cleanPostId =
+      typeof postId === "string" ? postId.trim().slice(0, 120) : "";
+
+    const cleanPostTitle =
+      typeof postTitle === "string"
+        ? postTitle.trim().slice(0, 180).replace(/[<>]/g, "")
+        : "";
+
     const validAction: "subscribe" | "unsubscribe" | "toggle" =
       action === "subscribe" || action === "unsubscribe" ? action : "toggle";
 
@@ -116,6 +126,8 @@ export async function POST(req: NextRequest) {
       subscriberAvatar: resolvedAvatar,
       targetUserId: cleanTargetUser,
       channelSlug: cleanChannel,
+      postId: cleanPostId || undefined,
+      postTitle: cleanPostTitle || undefined,
       action: validAction,
     });
 

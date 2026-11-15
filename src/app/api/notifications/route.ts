@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { getNotifications, markNotificationsRead } from "@/lib/data/store";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const user = await getCurrentUser();
-    const result = await getNotifications(user?.id);
+    const clientId = req.nextUrl.searchParams.get("clientId") || undefined;
+    const result = await getNotifications(user?.id, clientId);
     return NextResponse.json(
       {
         success: true,
@@ -29,6 +30,8 @@ async function handleMarkRead(req: NextRequest) {
     const body = await req.json().catch(() => ({}));
     const notificationId =
       typeof body?.notificationId === "string" ? body.notificationId : undefined;
+    const clientId =
+      typeof body?.clientId === "string" ? body.clientId : undefined;
     const markAll = Boolean(body?.markAll);
 
     if (!markAll && !notificationId) {
@@ -42,6 +45,7 @@ async function handleMarkRead(req: NextRequest) {
       notificationId,
       markAll,
       recipientId: user?.id,
+      clientId,
     });
 
     return NextResponse.json({

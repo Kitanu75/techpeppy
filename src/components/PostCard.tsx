@@ -24,7 +24,13 @@ interface PostCardProps {
   currentUser?: SessionUser | null;
   onDeletePost?: (postId: string) => void;
   isSubscribed?: boolean;
-  onSubscribeChannel?: (channelSlug: string, authorId?: string, authorName?: string) => void;
+  onSubscribeChannel?: (
+    channelSlug: string,
+    authorId?: string,
+    authorName?: string,
+    postId?: string,
+    postTitle?: string
+  ) => void;
 }
 
 export const PostCard: React.FC<PostCardProps> = ({
@@ -130,7 +136,9 @@ export const PostCard: React.FC<PostCardProps> = ({
                   onSubscribeChannel(
                     post.communitySlug,
                     post.author?.id,
-                    post.author?.name || post.author?.username
+                    post.author?.name || post.author?.username,
+                    post.id,
+                    post.title
                   );
                 }}
                 className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-mono font-semibold transition-all cursor-pointer ${

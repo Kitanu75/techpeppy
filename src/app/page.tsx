@@ -33,6 +33,7 @@ export default function Home() {
 
   // Subscriptions & Toast State
   const [subscribedChannels, setSubscribedChannels] = useState<string[]>([]);
+  const [subscribedPosts, setSubscribedPosts] = useState<string[]>([]);
   const [subscriberCount, setSubscriberCount] = useState<number>(0);
   const [toast, setToast] = useState<{ title: string; subtitle?: string } | null>(null);
 
@@ -98,6 +99,9 @@ export default function Home() {
           if (Array.isArray(data.subscribedChannels)) {
             setSubscribedChannels(data.subscribedChannels);
           }
+          if (Array.isArray(data.subscribedPosts)) {
+            setSubscribedPosts(data.subscribedPosts);
+          }
           if (typeof data.totalSubscribers === "number") {
             setSubscriberCount(data.totalSubscribers);
           }
@@ -156,32 +160,54 @@ export default function Home() {
     channelSlug = "publication",
     targetUserId = "usr_sandeep_author",
     targetAuthorName = "Sandeep Kumar",
+    postId,
+    postTitle,
     email,
   }: {
     channelSlug?: string;
     targetUserId?: string;
     targetAuthorName?: string;
+    postId?: string;
+    postTitle?: string;
     email?: string;
   }) => {
     const previousChannels = [...subscribedChannels];
+    const previousPosts = [...subscribedPosts];
     const previousCount = subscriberCount;
-    const isCurrentlySubscribed = subscribedChannels.includes(channelSlug);
+
+    const isPostSub = Boolean(postId);
+    const isCurrentlySubscribed = isPostSub
+      ? subscribedPosts.includes(postId as string)
+      : subscribedChannels.includes(channelSlug);
     const shouldSubscribe = email ? true : !isCurrentlySubscribed;
 
     // Optimistic state flip
     if (shouldSubscribe) {
-      if (!isCurrentlySubscribed) {
-        setSubscribedChannels((prev) => [...prev, channelSlug]);
-        if (previousChannels.length === 0) {
-          setSubscriberCount((c) => c + 1);
+      if (isPostSub && postId) {
+        if (!isCurrentlySubscribed) {
+          setSubscribedPosts((prev) => [...prev, postId]);
         }
+        showToast(
+          "Subscribed to post",
+          "You will get notified on new replies & updates"
+        );
+      } else {
+        if (!isCurrentlySubscribed) {
+          setSubscribedChannels((prev) => [...prev, channelSlug]);
+          if (previousChannels.length === 0 && previousPosts.length === 0) {
+            setSubscriberCount((c) => c + 1);
+          }
+        }
+        const targetLabel =
+          channelSlug === "publication" ? "TechPeppy Publication" : `t/${channelSlug}`;
+        showToast(
+          `Subscribed to ${targetLabel}`,
+          `Real-time alert sent to ${targetAuthorName}`
+        );
       }
-      const targetLabel =
-        channelSlug === "publication" ? "TechPeppy Publication" : `t/${channelSlug}`;
-      showToast(
-        `Subscribed to ${targetLabel}`,
-        `Real-time alert sent to ${targetAuthorName}`
-      );
+    } else if (isPostSub && postId) {
+      setSubscribedPosts((prev) => prev.filter((id) => id !== postId));
+      showToast("Unsubscribed from post");
     } else {
       setSubscribedChannels((prev) => prev.filter((ch) => ch !== channelSlug));
       showToast(
@@ -199,6 +225,8 @@ export default function Home() {
         body: JSON.stringify({
           channelSlug,
           targetUserId,
+          postId,
+          postTitle,
           subscriberEmail: email,
           clientId: cid,
           action: email ? "subscribe" : "toggle",
@@ -225,8 +253,26 @@ export default function Home() {
       const message = err instanceof Error ? err.message : "Please try again";
       // Revert optimistic update on failure
       setSubscribedChannels(previousChannels);
+      setSubscribedPosts(previousPosts);
       setSubscriberCount(previousCount);
       showToast("Subscription error", message);
+    }
+  };
+
+  const handleOpenPostById = async (postId: string) => {
+    const existing = posts.find((p) => p.id === postId || p.slug === postId);
+    if (existing) {
+      setSelectedPost(existing);
+      return;
+    }
+    try {
+      const res = await fetch(`/api/posts/${encodeURIComponent(postId)}`);
+      const data = await res.json();
+      if (data.success && data.post) {
+        setSelectedPost(data.post);
+      }
+    } catch (err) {
+      console.error("Failed to open post from notification:", err);
     }
   };
 
@@ -306,6 +352,7 @@ export default function Home() {
         onLogout={handleLogout}
         openAboutModal={() => setIsAboutOpen(true)}
         openContactModal={() => setIsContactOpen(true)}
+        onSelectPostById={handleOpenPostById}
       />
 
       {/* Main Container */}
@@ -448,12 +495,14 @@ export default function Home() {
                     setActiveCommunity={setActiveCommunity}
                     currentUser={user}
                     onDeletePost={handleDeletePost}
-                    isSubscribed={subscribedChannels.includes(post.communitySlug)}
-                    onSubscribeChannel={(channelSlug, authorId, authorName) =>
+                    isSubscribed={subscribedPosts.includes(post.id)}
+                    onSubscribeChannel={(channelSlug, authorId, authorName, postId, postTitle) =>
                       handleSubscribe({
                         channelSlug,
                         targetUserId: authorId || "usr_sandeep_author",
                         targetAuthorName: authorName || "Sandeep Kumar",
+                        postId,
+                        postTitle,
                       })
                     }
                   />
