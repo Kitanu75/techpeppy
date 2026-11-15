@@ -3,34 +3,33 @@
 :root {
   /* === TECHPEPPY EDITORIAL PRECISION SYSTEM === */
 
-  /* Canvas & Surfaces (Warm Editorial Paper) */
-  --bg-canvas: #F6F5F0;
+  /* Canvas & Surfaces (Crisp Cool Slate/Zinc) */
+  --bg-canvas: #F8FAFC;
   --bg-card: #FFFFFF;
-  --bg-card-hover: #FDFCFA;
-  --bg-subtle: #EFECE6;
-  --bg-muted: #E2E0D8;
+  --bg-card-hover: #FFFFFF;
+  --bg-subtle: #F1F5F9;
+  --bg-muted: #E2E8F0;
 
   /* Typography */
-  --text-primary: #141413;
-  --text-secondary: #686763;
-  --text-muted: #8A8A95;
-  --text-dim: #9C9A93;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+  --text-dim: #94A3B8;
 
-  /* Intentional Accents */
+  /* Unified Crisp Emerald Accent */
   --accent: #10B981;
   --accent-hover: #059669;
   --accent-light: #ECFDF5;
   --accent-glow: rgba(16, 185, 129, 0.12);
-  --signal-orange: #FF5500;
 
   /* Primary Action Button */
-  --btn-primary: #141413;
-  --btn-primary-hover: #27272A;
+  --btn-primary: #0F172A;
+  --btn-primary-hover: #1E293B;
   --btn-primary-text: #FFFFFF;
 
   /* Hairline Structural Borders */
-  --border: #E2E0D8;
-  --border-hover: #CFCBC0;
+  --border: #E2E8F0;
+  --border-hover: #CBD5E1;
   --border-accent: rgba(16, 185, 129, 0.35);
 
   /* Semantic */
@@ -74,12 +73,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #CFCBC0;
+  background: #CBD5E1;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #A8A396;
+  background: #94A3B8;
 }
 
 /* === SMOOTH TRANSITIONS === */
@@ -91,11 +90,11 @@ body {
 
 /* === CARD SHADOWS === */
 .shadow-card {
-  box-shadow: 0 1px 2px 0 rgba(20, 20, 19, 0.03), 0 0 0 1px var(--border);
+  box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.03), 0 1px 1px -1px rgba(15, 23, 42, 0.02);
 }
 
 .shadow-card-hover {
-  box-shadow: 0 4px 12px 0 rgba(20, 20, 19, 0.05), 0 0 0 1px var(--border-hover);
+  box-shadow: 0 6px 16px -4px rgba(15, 23, 42, 0.06), 0 2px 6px -2px rgba(15, 23, 42, 0.04);
 }
 
 /* === SKELETON LOADING === */
@@ -105,7 +104,7 @@ body {
 }
 
 .skeleton-pulse {
-  background: linear-gradient(90deg, #EFECE6 25%, #E2E0D8 50%, #EFECE6 75%);
+  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
   background-size: 200% 100%;
   animation: shimmer 1.8s ease-in-out infinite;
 }

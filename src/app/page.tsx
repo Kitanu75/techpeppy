@@ -328,7 +328,7 @@ export default function Home() {
   const currentCommunityObj = communities.find((c) => c.slug === activeCommunity);
 
   return (
-    <div className="min-h-screen bg-[#F6F5F0] text-[#141413]">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A]">
       {/* Navbar */}
       <Navbar
         searchQuery={searchQuery}
@@ -378,17 +378,17 @@ export default function Home() {
           <section className="flex-1 max-w-[760px] min-w-0">
             {/* Publication Showcase Hero (When viewing All Feeds) */}
             {activeCommunity === "all" && !searchQuery && (
-              <div className="mb-4 rounded-lg border border-[#E2E0D8] bg-white p-5 sm:p-6 relative overflow-hidden">
+              <div className="mb-4 rounded-lg border border-[#E2E8F0] bg-white p-5 sm:p-6 shadow-card relative overflow-hidden">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-mono font-medium bg-[#ECFDF5] text-[#059669] border border-[#10B981]/30">
                     <span className="h-1.5 w-1.5 rounded-full bg-[#10B981] animate-pulse" />
                     Engineering Publication & Architecture Hub
                   </span>
                 </div>
-                <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#141413] mb-1.5">
+                <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#0F172A] mb-1.5">
                   Decoupled Systems, Production AI & Workstations
                 </h1>
-                <p className="text-xs sm:text-sm text-[#686763] leading-relaxed max-w-2xl">
+                <p className="text-xs sm:text-sm text-[#475569] leading-relaxed max-w-2xl">
                   High-signal technical rationale, microservice blueprints, local LLM orchestration, and ergonomic workspace gear curated by Sandeep Kumar.
                 </p>
               </div>
@@ -396,7 +396,7 @@ export default function Home() {
 
             {/* Active Channel Header (if filtered) */}
             {activeCommunity !== "all" && currentCommunityObj && (
-              <div className="mb-4 rounded-lg border border-[#E2E0D8] bg-white p-5">
+              <div className="mb-4 rounded-lg border border-[#E2E8F0] bg-white p-5 shadow-card">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3.5">
                     <CommunityIcon
@@ -405,10 +405,10 @@ export default function Home() {
                       className="h-6 w-6"
                     />
                     <div>
-                      <h1 className="text-lg font-bold text-[#141413]">
+                      <h1 className="text-lg font-bold text-[#0F172A]">
                         {currentCommunityObj.name}
                       </h1>
-                      <p className="text-xs text-[#686763] mt-0.5 font-mono">
+                      <p className="text-xs text-[#475569] mt-0.5 font-mono">
                         t/{currentCommunityObj.slug} • {currentCommunityObj.description}
                       </p>
                     </div>
@@ -423,7 +423,7 @@ export default function Home() {
                         setIsCreateOpen(true);
                       }
                     }}
-                    className="rounded-md bg-[#141413] hover:bg-[#27272A] px-4 py-2 text-xs font-semibold text-white transition-colors cursor-pointer shrink-0"
+                    className="rounded-md bg-[#0F172A] hover:bg-[#1E293B] px-4 py-2 text-xs font-semibold text-white transition-colors cursor-pointer shrink-0"
                   >
                     Post Here
                   </button>
@@ -456,16 +456,16 @@ export default function Home() {
                 {[1, 2, 3].map((n) => (
                   <div
                     key={n}
-                    className="h-32 rounded-lg border border-[#E2E0D8] bg-white skeleton-pulse"
+                    className="h-32 rounded-lg border border-[#E2E8F0] bg-white skeleton-pulse"
                   />
                 ))}
               </div>
             ) : posts.length === 0 ? (
-              <div className="rounded-lg border border-[#E2E0D8] bg-white p-8 text-center">
-                <p className="text-sm font-semibold text-[#141413] mb-1">
+              <div className="rounded-lg border border-[#E2E8F0] bg-white p-8 text-center shadow-card">
+                <p className="text-sm font-semibold text-[#0F172A] mb-1">
                   No posts yet in this feed
                 </p>
-                <p className="text-xs text-[#686763] mb-4">
+                <p className="text-xs text-[#475569] mb-4">
                   {searchQuery
                     ? `No matching results for "${searchQuery}".`
                     : "Be the first to share an architectural tip, discussion, or setup!"}
@@ -479,7 +479,7 @@ export default function Home() {
                       setIsCreateOpen(true);
                     }
                   }}
-                  className="rounded-md bg-[#141413] hover:bg-[#27272A] px-4 py-2 text-xs font-semibold text-white transition-colors cursor-pointer"
+                  className="rounded-md bg-[#0F172A] hover:bg-[#1E293B] px-4 py-2 text-xs font-semibold text-white transition-colors cursor-pointer"
                 >
                   Create Post
                 </button>
@@ -535,13 +535,13 @@ export default function Home() {
       {toast && (
         <div
           role="status"
-          className="fixed bottom-5 right-5 z-50 flex items-start gap-3 rounded-md border border-[#E2E0D8] bg-[#141413] px-4 py-3 text-white shadow-xl max-w-sm"
+          className="fixed bottom-5 right-5 z-50 flex items-start gap-3 rounded-md border border-[#1E293B] bg-[#0F172A] px-4 py-3 text-white shadow-xl max-w-sm"
         >
           <CheckCircle2 className="h-4 w-4 text-[#10B981] shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold leading-snug">{toast.title}</p>
             {toast.subtitle && (
-              <p className="mt-0.5 font-mono text-[11px] text-[#A1A1AA] leading-snug">
+              <p className="mt-0.5 font-mono text-[11px] text-[#94A3B8] leading-snug">
                 {toast.subtitle}
               </p>
             )}
@@ -549,7 +549,7 @@ export default function Home() {
           <button
             type="button"
             onClick={() => setToast(null)}
-            className="text-[#8A8A95] hover:text-white cursor-pointer"
+            className="text-[#64748B] hover:text-white cursor-pointer"
             aria-label="Dismiss notification"
           >
             <X className="h-3.5 w-3.5" />

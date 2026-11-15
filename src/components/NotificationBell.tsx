@@ -222,9 +222,9 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
       return <MessageSquare className="h-3 w-3 text-[#10B981]" />;
     }
     if (type === "NEW_POST") {
-      return <FileText className="h-3 w-3 text-[#141413]" />;
+      return <FileText className="h-3 w-3 text-[#0F172A]" />;
     }
-    return <UserPlus className="h-3 w-3 text-[#FF5500]" />;
+    return <UserPlus className="h-3 w-3 text-[#059669]" />;
   };
 
   return (
@@ -240,15 +240,15 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
         title="Notifications"
         className={`relative flex h-8.5 w-8.5 items-center justify-center rounded-md border transition-colors cursor-pointer ${
           isOpen
-            ? "border-[#141413] bg-[#EFECE6] text-[#141413]"
-            : "border-[#E2E0D8] bg-white hover:bg-[#EFECE6] text-[#141413]"
+            ? "border-[#0F172A] bg-[#F1F5F9] text-[#0F172A]"
+            : "border-[#E2E8F0] bg-white hover:bg-[#F1F5F9] hover:border-[#CBD5E1] text-[#0F172A]"
         }`}
       >
         <Bell className="h-4 w-4 stroke-[1.9]" />
         {unreadCount > 0 && (
           <span
             aria-label={`${unreadCount} unread notifications`}
-            className="absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#FF5500] px-1 font-mono text-[10px] font-bold leading-none text-white tabular-nums shadow-xs ring-2 ring-white"
+            className="absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#059669] px-1 font-mono text-[10px] font-bold leading-none text-white tabular-nums shadow-xs ring-2 ring-white"
           >
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
@@ -256,14 +256,14 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-md border border-[#E2E0D8] bg-white shadow-xl z-50 overflow-hidden">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-md border border-[#E2E8F0] bg-white shadow-xl z-50 overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-[#E2E0D8] bg-[#F6F5F0] px-3.5 py-2.5">
+          <div className="flex items-center justify-between border-b border-[#E2E8F0] bg-[#F8FAFC] px-3.5 py-2.5">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold tracking-tight text-[#141413]">
+              <span className="text-xs font-bold tracking-tight text-[#0F172A]">
                 Notifications
               </span>
-              <span className="rounded bg-white border border-[#E2E0D8] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[#686763] tabular-nums">
+              <span className="rounded bg-white border border-[#E2E8F0] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[#475569] tabular-nums">
                 {unreadCount} unread
               </span>
             </div>
@@ -274,8 +274,8 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
               disabled={unreadCount === 0}
               className={`flex items-center gap-1 font-mono text-[11px] font-medium transition-colors ${
                 unreadCount > 0
-                  ? "text-[#141413] hover:text-[#10B981] cursor-pointer"
-                  : "text-[#8A8A95] cursor-not-allowed"
+                  ? "text-[#0F172A] hover:text-[#059669] cursor-pointer"
+                  : "text-[#64748B] cursor-not-allowed"
               }`}
             >
               <CheckCheck className="h-3.5 w-3.5" />
@@ -284,14 +284,14 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
           </div>
 
           {/* Filter Tabs */}
-          <div className="flex items-center gap-1 border-b border-[#E2E0D8] bg-white px-3 py-1.5">
+          <div className="flex items-center gap-1 border-b border-[#E2E8F0] bg-white px-3 py-1.5">
             <button
               type="button"
               onClick={() => setActiveTab("all")}
               className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer ${
                 activeTab === "all"
-                  ? "bg-[#141413] text-white"
-                  : "text-[#686763] hover:bg-[#EFECE6] hover:text-[#141413]"
+                  ? "bg-[#0F172A] text-white"
+                  : "text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A]"
               }`}
             >
               <span>All</span>
@@ -305,8 +305,8 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
               onClick={() => setActiveTab("subscribers")}
               className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer ${
                 activeTab === "subscribers"
-                  ? "bg-[#141413] text-white"
-                  : "text-[#686763] hover:bg-[#EFECE6] hover:text-[#141413]"
+                  ? "bg-[#0F172A] text-white"
+                  : "text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A]"
               }`}
             >
               <UserPlus className="h-3 w-3" />
@@ -318,7 +318,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
           </div>
 
           {/* List Body */}
-          <div className="max-h-80 overflow-y-auto divide-y divide-[#E2E0D8]">
+          <div className="max-h-80 overflow-y-auto divide-y divide-[#E2E8F0]">
             {loading && notifications.length === 0 ? (
               <div className="p-4 space-y-2.5">
                 {[1, 2].map((i) => (
@@ -327,13 +327,13 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
               </div>
             ) : filteredNotifications.length === 0 ? (
               <div className="px-4 py-10 text-center">
-                <div className="mx-auto mb-2.5 flex h-9 w-9 items-center justify-center rounded-md border border-[#E2E0D8] bg-[#F6F5F0] text-[#686763]">
+                <div className="mx-auto mb-2.5 flex h-9 w-9 items-center justify-center rounded-md border border-[#E2E8F0] bg-[#F8FAFC] text-[#475569]">
                   <Sparkles className="h-4 w-4" />
                 </div>
-                <p className="text-xs font-semibold text-[#141413]">
+                <p className="text-xs font-semibold text-[#0F172A]">
                   No notifications yet
                 </p>
-                <p className="mt-1 text-[11px] text-[#686763] max-w-[240px] mx-auto leading-relaxed">
+                <p className="mt-1 text-[11px] text-[#475569] max-w-[240px] mx-auto leading-relaxed">
                   Subscribe to any post or channel to receive instant updates when new replies or posts arrive.
                 </p>
               </div>
@@ -345,8 +345,8 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                   onClick={() => handleItemClick(notif)}
                   className={`w-full flex items-start gap-3 px-3.5 py-3 text-left transition-colors cursor-pointer ${
                     notif.isRead
-                      ? "bg-white hover:bg-[#F6F5F0]"
-                      : "bg-[#EFECE6]/55 hover:bg-[#EFECE6]"
+                      ? "bg-white hover:bg-[#F8FAFC]"
+                      : "bg-[#ECFDF5]/45 hover:bg-[#ECFDF5]/80"
                   }`}
                 >
                   {/* Avatar or Initials */}
@@ -354,22 +354,22 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                     <img
                       src={notif.actorAvatar}
                       alt={notif.actorName}
-                      className="h-8 w-8 rounded-md border border-[#E2E0D8] bg-[#F6F5F0] object-cover shrink-0"
+                      className="h-8 w-8 rounded-md border border-[#E2E8F0] bg-[#F8FAFC] object-cover shrink-0"
                     />
                   ) : (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-md border border-[#E2E0D8] bg-[#141413] font-mono text-[11px] font-bold text-white shrink-0">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-md border border-[#E2E8F0] bg-[#0F172A] font-mono text-[11px] font-bold text-white shrink-0">
                       {getInitials(notif.actorName)}
                     </div>
                   )}
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-[#141413] leading-snug">
+                    <p className="text-xs text-[#0F172A] leading-snug">
                       <span className="font-bold">{notif.actorName}</span>{" "}
-                      <span className="text-[#686763]">{notif.message}</span>
+                      <span className="text-[#475569]">{notif.message}</span>
                     </p>
 
                     <div className="mt-1.5 flex items-center gap-2 flex-wrap">
-                      <span className="inline-flex items-center gap-1 rounded border border-[#E2E0D8] bg-[#F6F5F0] px-1.5 py-0.5 font-mono text-[10px] font-medium text-[#141413]">
+                      <span className="inline-flex items-center gap-1 rounded border border-[#E2E8F0] bg-[#F8FAFC] px-1.5 py-0.5 font-mono text-[10px] font-medium text-[#0F172A]">
                         {renderTypeIcon(notif.type)}
                         <span>
                           {notif.channelSlug && notif.channelSlug !== "publication"
@@ -379,7 +379,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                       </span>
                       <span
                         suppressHydrationWarning
-                        className="font-mono text-[10px] text-[#8A8A95] tabular-nums"
+                        className="font-mono text-[10px] text-[#64748B] tabular-nums"
                       >
                         {formatRelativeTime(notif.createdAt)}
                       </span>
@@ -390,7 +390,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                   {!notif.isRead && (
                     <span
                       title="Unread"
-                      className="mt-1.5 h-2 w-2 rounded-full bg-[#FF5500] shrink-0"
+                      className="mt-1.5 h-2 w-2 rounded-full bg-[#10B981] shrink-0"
                     />
                   )}
                 </button>
