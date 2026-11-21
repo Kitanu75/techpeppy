@@ -1,14 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-  ArrowBigUp,
-  ArrowBigDown,
-  MessageSquare,
-  ChevronDown,
-  ChevronUp,
-  Trash2,
-} from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { ArrowUp, MessageSquare, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { CommentType } from "@/lib/models/types";
 import { SessionUser } from "@/lib/auth";
 
@@ -31,19 +24,21 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   const [showReplyBox, setShowReplyBox] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [submittingReply, setSubmittingReply] = useState(false);
-
   const [userVote, setUserVote] = useState<number>(comment.userVote || 0);
   const [score, setScore] = useState<number>(comment.score);
+  const [nowMs, setNowMs] = useState<number>(0);
 
-  const handleVote = (target: 1 | -1) => {
-    let delta = 0;
-    if (userVote === target) {
-      setUserVote(0);
-      delta = -target;
-    } else {
-      delta = target - userVote;
-      setUserVote(target);
-    }
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      setNowMs(Date.now());
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  const handleUpvote = () => {
+    const nextVote = userVote === 1 ? 0 : 1;
+    const delta = nextVote - userVote;
+    setUserVote(nextVote);
     setScore((prev) => prev + delta);
   };
 
@@ -62,7 +57,8 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   };
 
   const formatTimeAgo = (dateStr: string) => {
-    const diffSeconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+    if (!nowMs) return "";
+    const diffSeconds = Math.max(0, Math.floor((nowMs - new Date(dateStr).getTime()) / 1000));
     if (diffSeconds < 60) return "just now";
     const diffMinutes = Math.floor(diffSeconds / 60);
     if (diffMinutes < 60) return `${diffMinutes}m`;
@@ -78,56 +74,60 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       currentUser.username === comment.author?.username);
 
   return (
-    <div className={`relative ${level > 0 ? "ml-3 sm:ml-5 mt-2.5 border-l border-zinc-200 pl-3" : "mt-3"}`}>
-      {/* Comment Header */}
-      <div className="flex items-center gap-2 text-xs text-zinc-500 mb-1">
+    <div
+      className={`relative ${
+        level > 0 ? "ml-3 sm:ml-5 mt-3 border-l border-[#E4E4E7] pl-3.5" : "mt-4"
+      }`}
+    >
+      <div className="flex items-center gap-2 text-xs text-[#71717A] mb-1.5">
         <img
-          src={comment.author.avatar || `https://api.dicebear.com/7.x/identicon/svg?seed=${comment.author.username}`}
+          src={
+            comment.author.avatar ||
+            `https://api.dicebear.com/7.x/identicon/svg?seed=${comment.author.username}`
+          }
           alt=""
-          className="h-4 w-4 rounded-full object-cover ring-1 ring-zinc-200"
+          className="h-4.5 w-4.5 rounded-full object-cover"
         />
-        <span className="font-semibold text-zinc-950">{comment.author.name || `u/${comment.author.username}`}</span>
-        <span>•</span>
-        <span suppressHydrationWarning>{formatTimeAgo(comment.createdAt)}</span>
+        <span className="font-medium text-[#111315]">
+          {comment.author.name || comment.author.username}
+        </span>
+        <span aria-hidden>·</span>
+        <span suppressHydrationWarning className="tabular-nums">
+          {formatTimeAgo(comment.createdAt)}
+        </span>
 
         <button
+          type="button"
           onClick={() => setCollapsed(!collapsed)}
-          className="ml-auto text-zinc-400 hover:text-zinc-950 cursor-pointer"
+          aria-label={collapsed ? "Expand comment" : "Collapse comment"}
+          className="ml-auto text-[#A1A1AA] hover:text-[#111315] cursor-pointer"
         >
-          {collapsed ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
+          {collapsed ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />}
         </button>
       </div>
 
       {!collapsed && (
         <>
-          {/* Comment Body */}
-          <div className="text-xs sm:text-sm text-zinc-600 leading-relaxed whitespace-pre-line mb-1.5 font-normal">
+          <div className="text-sm text-[#27272A] leading-relaxed whitespace-pre-line mb-2">
             {comment.content}
           </div>
 
-          {/* Voting & Actions */}
-          <div className="flex items-center gap-3 text-xs text-zinc-500 mb-1.5">
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => handleVote(1)}
-                className={`p-0.5 hover:text-emerald-700 transition-colors cursor-pointer ${userVote === 1 ? "text-emerald-700" : ""}`}
-              >
-                <ArrowBigUp className={`h-4 w-4 ${userVote === 1 ? "fill-emerald-600" : ""}`} />
-              </button>
-              <span className={`text-[11px] font-mono font-bold ${userVote === 1 ? "text-emerald-700" : userVote === -1 ? "text-rose-600" : "text-zinc-700"}`}>
-                {score}
-              </span>
-              <button
-                onClick={() => handleVote(-1)}
-                className={`p-0.5 hover:text-rose-600 transition-colors cursor-pointer ${userVote === -1 ? "text-rose-600" : ""}`}
-              >
-                <ArrowBigDown className={`h-4 w-4 ${userVote === -1 ? "fill-rose-600" : ""}`} />
-              </button>
-            </div>
+          <div className="flex items-center gap-3 text-xs text-[#71717A] mb-2">
+            <button
+              type="button"
+              onClick={handleUpvote}
+              className={`inline-flex items-center gap-1 tabular-nums cursor-pointer transition-colors ${
+                userVote === 1 ? "text-[#0F766E] font-semibold" : "hover:text-[#111315]"
+              }`}
+            >
+              <ArrowUp className="h-3.5 w-3.5" />
+              <span>{score}</span>
+            </button>
 
             <button
+              type="button"
               onClick={() => setShowReplyBox(!showReplyBox)}
-              className="flex items-center gap-1 text-[11px] hover:text-zinc-900 transition-colors cursor-pointer font-medium"
+              className="inline-flex items-center gap-1 hover:text-[#111315] transition-colors cursor-pointer font-medium"
             >
               <MessageSquare className="h-3 w-3" />
               <span>Reply</span>
@@ -135,41 +135,41 @@ export const CommentItem: React.FC<CommentItemProps> = ({
 
             {canDelete && onDeleteComment && (
               <button
+                type="button"
                 onClick={() => {
                   if (confirm("Delete this comment?")) {
-                    onDeleteComment(comment.id);
+                    void onDeleteComment(comment.id);
                   }
                 }}
                 title="Delete comment"
-                className="ml-auto text-rose-400 hover:text-rose-600 cursor-pointer p-0.5"
+                className="ml-auto text-[#A1A1AA] hover:text-[#DC2626] cursor-pointer p-0.5"
               >
-                <Trash2 className="h-3 w-3" />
+                <Trash2 className="h-3.5 w-3.5" />
               </button>
             )}
           </div>
 
-          {/* Inline Reply Input */}
           {showReplyBox && (
-            <form onSubmit={handleReplySubmit} className="my-2 space-y-2">
+            <form onSubmit={handleReplySubmit} className="my-2.5 space-y-2">
               <textarea
                 rows={2}
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 placeholder="Write a reply..."
-                className="w-full rounded-xl border border-zinc-200 bg-zinc-50/70 p-2 text-xs text-zinc-950 placeholder-zinc-400 focus:border-zinc-400 focus:bg-white focus:outline-none"
+                className="w-full rounded-lg border border-[#D4D4D8] bg-[#F4F4F5]/60 p-2.5 text-xs text-[#111315] placeholder-[#71717A] focus:border-[#0F766E] focus:bg-white focus:outline-none"
               />
               <div className="flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowReplyBox(false)}
-                  className="rounded-xl px-3 py-1 text-xs text-zinc-500 hover:text-zinc-950 cursor-pointer"
+                  className="rounded-lg px-3 py-1 text-xs text-[#71717A] hover:text-[#111315] cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submittingReply}
-                  className="rounded-xl bg-zinc-950 hover:bg-zinc-800 px-3.5 py-1 text-xs font-semibold text-white shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+                  className="rounded-lg bg-[#111315] hover:bg-[#0F766E] px-3.5 py-1 text-xs font-semibold text-white transition-colors cursor-pointer disabled:opacity-50"
                 >
                   {submittingReply ? "..." : "Reply"}
                 </button>
@@ -177,7 +177,6 @@ export const CommentItem: React.FC<CommentItemProps> = ({
             </form>
           )}
 
-          {/* Nested Replies */}
           {comment.replies && comment.replies.length > 0 && (
             <div className="space-y-1">
               {comment.replies.map((reply) => (

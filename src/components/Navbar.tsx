@@ -1,11 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Search, Plus, X, LogOut, Shield, Info, Mail } from "lucide-react";
+import { Search, X, LogOut, Shield, Info, Mail, PenLine } from "lucide-react";
 import { SessionUser } from "@/lib/auth";
+import { CommunityType } from "@/lib/models/types";
 import { NotificationBell } from "./NotificationBell";
+import { CommunityIcon } from "./CommunityIcon";
 
 interface NavbarProps {
+  communities: CommunityType[];
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   openCreateModal: () => void;
@@ -19,10 +22,20 @@ interface NavbarProps {
   onSelectPostById?: (postId: string) => void;
 }
 
+const DEFAULT_TOPICS = [
+  { slug: "software-architecture", name: "Software Architecture" },
+  { slug: "ai-learning", name: "AI & Models" },
+  { slug: "data-science", name: "Data Science" },
+  { slug: "desk-setups", name: "Desk Setups" },
+  { slug: "tech-news", name: "Tech News" },
+];
+
 export const Navbar: React.FC<NavbarProps> = ({
+  communities,
   searchQuery,
   setSearchQuery,
   openCreateModal,
+  activeCommunity,
   setActiveCommunity,
   user,
   openAuthModal,
@@ -32,10 +45,17 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSelectPostById,
 }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  // Global ⌘K / Ctrl+K shortcut to focus hardware command search bar
+  const topicTabs = [
+    { slug: "all", name: "All" },
+    ...(communities.length > 0
+      ? communities.map((c) => ({ slug: c.slug, name: c.name }))
+      : DEFAULT_TOPICS),
+  ];
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -49,7 +69,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Close user menu on outside click
   useEffect(() => {
     const handleMouseDown = (e: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
@@ -61,62 +80,67 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 w-full h-14 border-b border-[#E2E8F0] bg-white/95 backdrop-blur-xs">
-      <div className="mx-auto flex h-full max-w-[1360px] items-center justify-between px-4 sm:px-8 gap-3">
-        {/* Brand */}
-        <div className="flex items-center shrink-0">
+    <header className="sticky top-0 z-40 w-full bg-[#111315]/95 backdrop-blur-md text-[#FAFAFA]">
+      {/* Primary Top Bar */}
+      <div className="mx-auto max-w-[1240px] px-5 sm:px-8 h-15 flex items-center justify-between gap-4">
+        {/* Left: Brand Wordmark + Compact Search */}
+        <div className="flex items-center gap-5 min-w-0">
           <button
-            onClick={() => setActiveCommunity("all")}
-            className="flex items-center gap-2.5 group text-left cursor-pointer focus:outline-none"
+            type="button"
+            onClick={() => {
+              setActiveCommunity("all");
+              setSearchQuery("");
+            }}
+            className="inline-flex items-center gap-2 font-display text-[21px] sm:text-[23px] font-extrabold tracking-[-0.04em] leading-none text-white hover:opacity-90 transition-opacity cursor-pointer shrink-0 focus:outline-none"
           >
-            <div className="h-8 w-8 rounded-md bg-[#0F172A] border border-[#0F172A] flex items-center justify-center text-[#F8FAFC] font-mono font-bold text-xs tracking-tight group-hover:bg-[#1E293B] transition-colors">
-              TP
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-base sm:text-lg tracking-tight text-[#0F172A] group-hover:text-[#475569] transition-colors">
-                TechPeppy
-              </span>
-              <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-mono font-medium tracking-wide px-2 py-0.5 rounded-md bg-[#F8FAFC] text-[#475569] border border-[#E2E8F0]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
-                Engineering
-              </span>
-            </div>
+            <span className="h-2.5 w-2.5 rounded-[2px] bg-[#0F766E] inline-block" aria-hidden />
+            <span>TechPeppy</span>
           </button>
-        </div>
 
-        {/* Tactile Hardware Command Search Bar with ⌘K */}
-        <div className="mx-2 flex-1 max-w-sm sm:max-w-md lg:max-w-lg">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#64748B]" />
+          <div className="relative hidden md:block w-56 lg:w-64">
+            <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#71717A]" />
             <input
               ref={searchInputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search architecture blueprints, RAG systems, gear..."
-              className="w-full h-8.5 rounded-md border border-[#E2E8F0] bg-[#F8FAFC] pl-8.5 pr-14 text-xs text-[#0F172A] placeholder-[#64748B] hover:border-[#CBD5E1] focus:bg-white focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/15 focus:outline-none transition-all"
+              placeholder="Search stories..."
+              aria-label="Search posts"
+              className="w-full h-8.5 rounded-lg border border-[#272A30] bg-[#191C20] pl-8.5 pr-12 text-[13px] text-[#FAFAFA] placeholder-[#71717A] hover:border-[#3F434D] focus:border-[#0F766E] focus:outline-none transition-colors"
             />
             {searchQuery ? (
               <button
+                type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#475569] hover:text-[#0F172A] cursor-pointer"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#A1A1AA] hover:text-white cursor-pointer"
                 aria-label="Clear search"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
             ) : (
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex items-center pointer-events-none">
-                <kbd className="font-mono tabular-nums text-[10px] font-medium text-[#475569] bg-white border border-[#E2E8F0] px-1.5 py-0.5 rounded shadow-2xs">
-                  ⌘K
-                </kbd>
-              </div>
+              <kbd
+                aria-hidden
+                className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded border border-[#272A30] bg-[#111315] px-1.5 py-0.5 text-[10px] font-medium text-[#71717A]"
+              >
+                ⌘K
+              </kbd>
             )}
           </div>
         </div>
 
-        {/* Right Actions */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Right: Mobile Search, Write, Notifications, Account */}
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
           <button
+            type="button"
+            onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+            aria-label="Search"
+            className="md:hidden p-2 text-[#A1A1AA] hover:text-white cursor-pointer"
+          >
+            <Search className="h-4 w-4" />
+          </button>
+
+          <button
+            type="button"
             onClick={() => {
               if (!user) {
                 openAuthModal("login");
@@ -124,13 +148,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                 openCreateModal();
               }
             }}
-            className="flex h-8.5 items-center gap-1.5 rounded-md bg-[#0F172A] hover:bg-[#1E293B] border border-[#0F172A] px-3 text-xs font-semibold text-white transition-colors cursor-pointer"
+            aria-label="Write"
+            title="Write"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[#272A30] bg-[#191C20] hover:bg-[#23272D] hover:border-[#3F434D] px-3 py-1.5 text-xs font-medium text-[#FAFAFA] transition-colors cursor-pointer"
           >
-            <Plus className="h-3.5 w-3.5 stroke-[2.2]" />
-            <span>Post</span>
+            <PenLine className="h-3.5 w-3.5 text-[#2DD4BF]" />
+            <span className="hidden sm:inline">Write</span>
           </button>
 
-          {/* Real-Time Notification Bell */}
           <NotificationBell
             currentUser={user}
             onSelectChannel={setActiveCommunity}
@@ -140,89 +165,146 @@ export const Navbar: React.FC<NavbarProps> = ({
           {user ? (
             <div ref={userMenuRef} className="relative">
               <button
+                type="button"
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex h-8.5 items-center gap-2 rounded-md border border-[#E2E8F0] bg-white px-2 hover:bg-[#F1F5F9] hover:border-[#CBD5E1] transition-colors cursor-pointer"
+                className="flex h-8.5 items-center gap-2 rounded-full border border-[#272A30] bg-[#191C20] pl-1 pr-2.5 hover:border-[#3F434D] transition-colors cursor-pointer"
               >
                 <img
                   src={user.avatar}
                   alt={user.name}
-                  className="h-5.5 w-5.5 rounded object-cover border border-[#E2E8F0]"
+                  className="h-6 w-6 rounded-full object-cover"
                 />
-                <span className="hidden sm:inline text-xs font-semibold text-[#0F172A]">
+                <span className="hidden sm:inline text-xs font-medium text-[#FAFAFA]">
                   {user.name.split(" ")[0]}
                 </span>
               </button>
 
               {showUserMenu && (
-                <div className="absolute right-0 mt-2 w-56 rounded-md border border-[#E2E8F0] bg-white p-1.5 shadow-xl z-50">
-                  <div className="px-3 py-2 border-b border-[#E2E8F0] mb-1">
-                    <p className="text-xs font-bold text-[#0F172A] flex items-center gap-1.5">
-                      <span>{user.name}</span>
+                <div className="absolute right-0 mt-2 w-48 rounded-xl border border-[#E4E4E7] bg-white p-1.5 shadow-xl z-50 text-[#111315]">
+                  <div className="px-3 py-2 border-b border-[#E4E4E7] mb-1">
+                    <p className="text-xs font-semibold text-[#111315] flex items-center gap-1.5">
+                      <span className="truncate">{user.name}</span>
                       {user.role === "admin" && (
-                        <Shield className="h-3 w-3 text-[#10B981]" />
+                        <Shield className="h-3 w-3 text-[#0F766E] shrink-0" />
                       )}
                     </p>
-                    <p className="text-[11px] text-[#475569] font-mono">u/{user.username}</p>
+                    <p className="text-[11px] text-[#71717A] truncate">@{user.username}</p>
                   </div>
 
-                  <div className="text-xs text-[#475569] space-y-0.5">
+                  <div className="text-xs text-[#52525B] space-y-0.5">
                     {openAboutModal && (
                       <button
+                        type="button"
                         onClick={() => {
                           setShowUserMenu(false);
                           openAboutModal();
                         }}
-                        className="w-full flex items-center gap-2 rounded-md px-3 py-2 hover:bg-[#F1F5F9] hover:text-[#0F172A] text-left transition-colors cursor-pointer"
+                        className="w-full flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-[#F4F4F5] hover:text-[#111315] text-left transition-colors cursor-pointer"
                       >
-                        <Info className="h-3.5 w-3.5 text-[#64748B]" />
-                        <span>About TechPeppy</span>
+                        <Info className="h-3.5 w-3.5 text-[#71717A]" />
+                        <span>About</span>
                       </button>
                     )}
 
                     {openContactModal && (
                       <button
+                        type="button"
                         onClick={() => {
                           setShowUserMenu(false);
                           openContactModal();
                         }}
-                        className="w-full flex items-center gap-2 rounded-md px-3 py-2 hover:bg-[#F1F5F9] hover:text-[#0F172A] text-left transition-colors cursor-pointer"
+                        className="w-full flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-[#F4F4F5] hover:text-[#111315] text-left transition-colors cursor-pointer"
                       >
-                        <Mail className="h-3.5 w-3.5 text-[#64748B]" />
-                        <span>Contact & Support</span>
+                        <Mail className="h-3.5 w-3.5 text-[#71717A]" />
+                        <span>Contact</span>
                       </button>
                     )}
 
                     <button
+                      type="button"
                       onClick={() => {
                         setShowUserMenu(false);
                         onLogout();
                       }}
-                      className="w-full flex items-center gap-2 rounded-md px-3 py-2 text-[#DC2626] hover:bg-red-50 transition-colors text-left cursor-pointer"
+                      className="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-[#DC2626] hover:bg-red-50 transition-colors text-left cursor-pointer"
                     >
                       <LogOut className="h-3.5 w-3.5" />
-                      <span>Log Out</span>
+                      <span>Log out</span>
                     </button>
                   </div>
                 </div>
               )}
             </div>
           ) : (
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={() => openAuthModal("login")}
-                className="h-8.5 rounded-md border border-[#E2E8F0] bg-white px-3 text-xs font-semibold text-[#0F172A] hover:bg-[#F1F5F9] hover:border-[#CBD5E1] transition-colors cursor-pointer"
-              >
-                Log In
-              </button>
-              <button
-                onClick={() => openAuthModal("register")}
-                className="hidden sm:inline-flex h-8.5 items-center rounded-md bg-[#0F172A] hover:bg-[#1E293B] border border-[#0F172A] px-3 text-xs font-semibold text-white transition-colors cursor-pointer"
-              >
-                Sign Up
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => openAuthModal("login")}
+              className="rounded-lg bg-white hover:bg-[#E4E4E7] px-3.5 py-1.5 text-xs font-semibold text-[#111315] transition-colors cursor-pointer"
+            >
+              Sign in
+            </button>
           )}
         </div>
+      </div>
+
+      {/* Expandable Mobile Search */}
+      {mobileSearchOpen && (
+        <div className="md:hidden border-t border-[#272A30] bg-[#111315] px-5 py-2.5">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#71717A]" />
+            <input
+              type="text"
+              autoFocus
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search stories..."
+              className="w-full h-9 rounded-lg border border-[#272A30] bg-[#191C20] pl-8.5 pr-8 text-sm text-[#FAFAFA] placeholder-[#71717A] focus:border-[#0F766E] focus:outline-none"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#A1A1AA] cursor-pointer"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Section Navigation Bar: Proper Non-AI Icon + Name Only */}
+      <div className="border-t border-b border-[#272A30] bg-[#111315]">
+        <nav
+          aria-label="Sections"
+          className="mx-auto max-w-[1240px] px-5 sm:px-8 flex items-center gap-6 sm:gap-7 overflow-x-auto no-scrollbar"
+        >
+          {topicTabs.map((topic) => {
+            const isActive = activeCommunity === topic.slug;
+            return (
+              <button
+                key={topic.slug}
+                type="button"
+                onClick={() => {
+                  setActiveCommunity(topic.slug);
+                  setSearchQuery("");
+                }}
+                aria-current={isActive ? "page" : undefined}
+                className={`shrink-0 -mb-px inline-flex items-center gap-1.5 border-b-2 py-2.5 text-[13px] transition-colors cursor-pointer ${
+                  isActive
+                    ? "border-[#2DD4BF] text-white font-semibold"
+                    : "border-transparent text-[#A1A1AA] hover:text-white"
+                }`}
+              >
+                <CommunityIcon
+                  slug={topic.slug}
+                  className={`h-3.5 w-3.5 ${isActive ? "text-[#2DD4BF]" : "text-[#71717A]"}`}
+                />
+                <span>{topic.name}</span>
+              </button>
+            );
+          })}
+        </nav>
       </div>
     </header>
   );

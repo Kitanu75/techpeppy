@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Send, CheckCircle2, AlertCircle } from "lucide-react";
+import { X, CheckCircle2, AlertCircle } from "lucide-react";
 
 interface ContactModalProps {
   isOpen: boolean;
@@ -38,118 +38,121 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose }) =
       setEmail("");
       setSubject("");
       setMessage("");
-    } catch (err: any) {
-      setError(err.message || "An error occurred");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="relative w-full max-w-md rounded-2xl border border-zinc-200/90 bg-white shadow-2xl p-6 sm:p-7 my-8 text-zinc-950">
-        {/* Close Button */}
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#111315]/70 backdrop-blur-xs p-4 overflow-y-auto"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-md rounded-xl border border-[#E4E4E7] bg-white shadow-2xl p-6 sm:p-7 my-8 text-[#111315]"
+      >
         <button
+          type="button"
           onClick={onClose}
-          className="absolute top-5 right-5 rounded-full p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-950 transition-colors cursor-pointer"
+          aria-label="Close"
+          className="absolute top-5 right-5 rounded-lg p-1.5 text-[#71717A] hover:bg-[#F4F4F5] hover:text-[#111315] transition-colors cursor-pointer"
         >
           <X className="h-5 w-5" />
         </button>
 
-        {/* Header */}
         <div className="mb-5">
-          <h2 className="text-xl font-bold text-zinc-950">Contact & Support</h2>
-          <p className="text-xs text-zinc-500 mt-1">
-            Direct inquiry to <span className="font-semibold text-emerald-700">admin@techpeppy.com</span>
+          <span className="text-xs font-semibold text-[#0F766E]">Direct Inquiry</span>
+          <h2 className="mt-1 font-display text-2xl font-bold tracking-[-0.02em] text-[#111315]">
+            Contact &amp; Consulting
+          </h2>
+          <p className="text-xs text-[#71717A] mt-1">
+            Messages go directly to{" "}
+            <span className="font-medium text-[#111315]">admin@techpeppy.com</span>
           </p>
         </div>
 
         {sent ? (
-          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 text-center">
-            <CheckCircle2 className="mx-auto mb-2 h-8 w-8 text-emerald-600" />
-            <h3 className="text-sm font-bold text-zinc-950 mb-1">Message Sent</h3>
-            <p className="text-xs text-zinc-500 mb-4">
-              Thanks for reaching out! We&apos;ll get back to you shortly.
+          <div className="rounded-lg border border-[#E4E4E7] bg-[#F4F4F5]/60 p-6 text-center">
+            <CheckCircle2 className="mx-auto mb-2.5 h-8 w-8 text-[#0F766E]" />
+            <h3 className="text-sm font-semibold text-[#111315] mb-1">Message Sent</h3>
+            <p className="text-xs text-[#52525B] mb-5">
+              Thanks for reaching out. We&apos;ll get back to you shortly.
             </p>
             <button
+              type="button"
               onClick={() => {
                 setSent(false);
                 onClose();
               }}
-              className="rounded-xl bg-zinc-950 hover:bg-zinc-800 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition-colors cursor-pointer"
+              className="rounded-lg bg-[#111315] hover:bg-[#0F766E] px-4 py-2 text-xs font-semibold text-white transition-colors cursor-pointer"
             >
               Done
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-3.5">
             {error && (
-              <div className="flex items-center gap-2 rounded-xl bg-rose-50 border border-rose-200 p-2.5 text-xs text-rose-700">
+              <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 p-2.5 text-xs text-[#DC2626]">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 <span>{error}</span>
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-medium text-zinc-500 mb-1">
-                Your Name
-              </label>
+              <label className="block text-xs font-medium text-[#52525B] mb-1.5">Your Name</label>
               <input
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Name"
-                className="w-full rounded-xl border border-zinc-200 bg-zinc-50/70 py-2 px-3 text-xs sm:text-sm text-zinc-950 placeholder-zinc-400 focus:border-zinc-400 focus:bg-white focus:outline-none"
+                className="w-full rounded-lg border border-[#D4D4D8] bg-white py-2 px-3 text-sm text-[#111315] placeholder-[#71717A] focus:border-[#0F766E] focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-zinc-500 mb-1">
-                Email
-              </label>
+              <label className="block text-xs font-medium text-[#52525B] mb-1.5">Email</label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@email.com"
-                className="w-full rounded-xl border border-zinc-200 bg-zinc-50/70 py-2 px-3 text-xs sm:text-sm text-zinc-950 placeholder-zinc-400 focus:border-zinc-400 focus:bg-white focus:outline-none"
+                placeholder="you@example.com"
+                className="w-full rounded-lg border border-[#D4D4D8] bg-white py-2 px-3 text-sm text-[#111315] placeholder-[#71717A] focus:border-[#0F766E] focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-zinc-500 mb-1">
-                Subject
-              </label>
+              <label className="block text-xs font-medium text-[#52525B] mb-1.5">Subject</label>
               <input
                 type="text"
                 required
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 placeholder="Topic or question"
-                className="w-full rounded-xl border border-zinc-200 bg-zinc-50/70 py-2 px-3 text-xs sm:text-sm text-zinc-950 placeholder-zinc-400 focus:border-zinc-400 focus:bg-white focus:outline-none"
+                className="w-full rounded-lg border border-[#D4D4D8] bg-white py-2 px-3 text-sm text-[#111315] placeholder-[#71717A] focus:border-[#0F766E] focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-zinc-500 mb-1">
-                Message
-              </label>
+              <label className="block text-xs font-medium text-[#52525B] mb-1.5">Message</label>
               <textarea
                 required
                 rows={3}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Your message..."
-                className="w-full rounded-xl border border-zinc-200 bg-zinc-50/70 py-2 px-3 text-xs sm:text-sm text-zinc-950 placeholder-zinc-400 focus:border-zinc-400 focus:bg-white focus:outline-none resize-none font-normal"
+                className="w-full rounded-lg border border-[#D4D4D8] bg-white py-2 px-3 text-sm text-[#111315] placeholder-[#71717A] focus:border-[#0F766E] focus:outline-none resize-none"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-zinc-950 hover:bg-zinc-800 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-2xs disabled:opacity-50 transition-colors cursor-pointer mt-2"
+              className="w-full rounded-lg bg-[#111315] hover:bg-[#0F766E] py-2.5 text-sm font-semibold text-white disabled:opacity-50 transition-colors cursor-pointer mt-2"
             >
               {loading ? "Sending..." : "Send Message"}
             </button>

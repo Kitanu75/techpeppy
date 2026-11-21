@@ -1,17 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-  ArrowBigUp,
-  ArrowBigDown,
-  MessageSquare,
-  Share2,
-  Bookmark,
-  Pin,
-  Trash2,
-  Check,
-  Plus,
-} from "lucide-react";
+import { ArrowUp, MessageSquare, Share2, Bookmark, Trash2, Check, UserPlus } from "lucide-react";
 import { PostType } from "@/lib/models/types";
 import { SessionUser } from "@/lib/auth";
 import { CommunityIcon } from "./CommunityIcon";
@@ -23,14 +13,8 @@ interface PostCardProps {
   setActiveCommunity: (slug: string) => void;
   currentUser?: SessionUser | null;
   onDeletePost?: (postId: string) => void;
-  isSubscribed?: boolean;
-  onSubscribeChannel?: (
-    channelSlug: string,
-    authorId?: string,
-    authorName?: string,
-    postId?: string,
-    postTitle?: string
-  ) => void;
+  isAuthorSubscribed?: boolean;
+  onSubscribeAuthor?: (authorId: string, authorName: string) => void;
 }
 
 export const PostCard: React.FC<PostCardProps> = ({
@@ -40,8 +24,8 @@ export const PostCard: React.FC<PostCardProps> = ({
   setActiveCommunity,
   currentUser,
   onDeletePost,
-  isSubscribed = false,
-  onSubscribeChannel,
+  isAuthorSubscribed = false,
+  onSubscribeAuthor,
 }) => {
   const [copied, setCopied] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -56,21 +40,26 @@ export const PostCard: React.FC<PostCardProps> = ({
     return () => cancelAnimationFrame(frame);
   }, []);
 
-  const handleVote = (e: React.MouseEvent, targetValue: 1 | -1) => {
+  const formatTimeAgo = (dateStr: string) => {
+    if (!nowMs) return "";
+    const diffSeconds = Math.max(0, Math.floor((nowMs - new Date(dateStr).getTime()) / 1000));
+    if (diffSeconds < 60) return "now";
+    const diffMinutes = Math.floor(diffSeconds / 60);
+    if (diffMinutes < 60) return `${diffMinutes}m`;
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours < 24) return `${diffHours}h`;
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 14) return `${diffDays}d`;
+    return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  };
+
+  const handleUpvote = (e: React.MouseEvent) => {
     e.stopPropagation();
-    let newVote: 1 | -1 | 0 = targetValue;
-    let scoreDelta = 0;
-
-    if (userVote === targetValue) {
-      newVote = 0;
-      scoreDelta = -targetValue;
-    } else {
-      scoreDelta = targetValue - userVote;
-    }
-
-    setUserVote(newVote);
-    setScore((prev) => prev + scoreDelta);
-    onVote(post.id, newVote);
+    const nextVote: 1 | 0 = userVote === 1 ? 0 : 1;
+    const delta = nextVote - userVote;
+    setUserVote(nextVote);
+    setScore((prev) => prev + delta);
+    onVote(post.id, nextVote);
   };
 
   const handleShare = (e: React.MouseEvent) => {
@@ -83,238 +72,191 @@ export const PostCard: React.FC<PostCardProps> = ({
     }
   };
 
-  const formatTimeAgo = (dateStr: string) => {
-    if (!nowMs) return "";
-    const diffSeconds = Math.max(0, Math.floor((nowMs - new Date(dateStr).getTime()) / 1000));
-    if (diffSeconds < 60) return "just now";
-    const diffMinutes = Math.floor(diffSeconds / 60);
-    if (diffMinutes < 60) return `${diffMinutes}m`;
-    const diffHours = Math.floor(diffMinutes / 60);
-    if (diffHours < 24) return `${diffHours}h`;
-    const diffDays = Math.floor(diffHours / 24);
-    return `${diffDays}d`;
-  };
+  const authorId = post.author?.id || post.author?.username || "usr_sandeep_author";
+  const authorName = post.author.name || post.author.username;
+  const isOwn = Boolean(
+    currentUser && (currentUser.id === authorId || currentUser.username === post.author?.username)
+  );
+  const canDelete =
+    currentUser && (currentUser.role === "admin" || currentUser.id === post.author?.id);
+  const coverImage = post.images && post.images.length > 0 ? post.images[0] : null;
 
   return (
     <article
+      tabIndex={0}
       onClick={() => onSelectPost(post)}
-      className="group relative rounded-lg border border-[#E2E8F0] bg-white p-5 sm:p-6 shadow-card hover:border-[#CBD5E1] hover:shadow-card-hover transition-all cursor-pointer overflow-hidden mb-3.5"
+      onKeyDown={(e) => {
+        if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          onSelectPost(post);
+        }
+      }}
+      className="group flex flex-col justify-between overflow-hidden rounded-xl border border-[#E4E4E7] bg-white hover:border-[#A1A1AA] hover:shadow-md active:scale-[0.995] transition-all duration-200 cursor-pointer"
     >
-      {/* Top Header: Metadata + Subscribe on Left, Upvote Badge on Right */}
-      <div className="flex items-center justify-between gap-3 mb-3">
-        <div className="flex flex-wrap items-center gap-2 text-xs text-[#475569]">
-          {post.isPinned && (
-            <span className="flex items-center gap-1 text-[11px] font-mono font-semibold text-[#059669] bg-[#ECFDF5] px-2 py-0.5 rounded border border-[#10B981]/30">
-              <Pin className="h-3 w-3" /> Pinned
-            </span>
-          )}
+      <div>
+        {/* Edge-to-Edge Cover Photo */}
+        {coverImage && (
+          <div className="aspect-[16/10] w-full overflow-hidden bg-[#F4F4F5] border-b border-[#E4E4E7]">
+            <img
+              src={coverImage}
+              alt={post.title}
+              className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+              loading="lazy"
+            />
+          </div>
+        )}
 
+        <div className="p-4 sm:p-5">
+          {/* Topic Badge (Non-AI Section Icon + Name) */}
           <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               setActiveCommunity(post.communitySlug);
             }}
-            className="flex items-center gap-1.5 font-mono font-semibold text-[#0F172A] hover:text-[#10B981] transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0F766E] hover:text-[#115E59] cursor-pointer"
           >
             <CommunityIcon slug={post.communitySlug} className="h-3.5 w-3.5" />
-            <span>t/{post.communitySlug}</span>
+            <span>{post.communityName || post.communitySlug}</span>
           </button>
 
-          <span className="text-[#64748B]">•</span>
+          {/* Bold Modern Display Title */}
+          <h3 className="mt-2 font-display text-[18px] sm:text-[19px] font-bold tracking-[-0.02em] leading-[1.28] text-[#111315] group-hover:text-[#0F766E] transition-colors">
+            {post.title}
+          </h3>
 
-          <div className="flex items-center gap-1.5">
-            {post.author.avatar && (
-              <img
-                src={post.author.avatar}
-                alt=""
-                className="h-4 w-4 rounded-full object-cover ring-1 ring-[#E2E8F0]"
-              />
-            )}
-            <span className="font-medium text-[#0F172A]">
-              {post.author.name || `u/${post.author.username}`}
-            </span>
-          </div>
-
-          {onSubscribeChannel && (
-            <>
-              <span className="text-[#64748B]">•</span>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSubscribeChannel(
-                    post.communitySlug,
-                    post.author?.id,
-                    post.author?.name || post.author?.username,
-                    post.id,
-                    post.title
-                  );
-                }}
-                className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-mono font-semibold transition-all cursor-pointer ${
-                  isSubscribed
-                    ? "border-[#10B981]/40 bg-[#ECFDF5] text-[#059669]"
-                    : "border-[#E2E8F0] bg-[#F8FAFC] text-[#0F172A] hover:border-[#10B981] hover:bg-[#ECFDF5] hover:text-[#059669]"
-                }`}
-              >
-                {isSubscribed ? (
-                  <>
-                    <Check className="h-3 w-3 stroke-[2.5]" />
-                    <span>Subscribed</span>
-                  </>
-                ) : (
-                  <>
-                    <Plus className="h-3 w-3 stroke-[2.5]" />
-                    <span>Subscribe</span>
-                  </>
-                )}
-              </button>
-            </>
+          {/* Restrained Post Excerpt (Only 2 lines on photo cards, 3 lines on text-only posts) */}
+          {post.content && (
+            <p
+              className={`mt-2 text-[13.5px] text-[#52525B] leading-[1.55] whitespace-pre-line ${
+                coverImage ? "line-clamp-2" : "line-clamp-3"
+              }`}
+            >
+              {post.content}
+            </p>
           )}
-
-          <span className="text-[#64748B]">•</span>
-          <span suppressHydrationWarning className="font-mono text-[11px] text-[#64748B] tabular-nums">
-            {formatTimeAgo(post.createdAt)}
-          </span>
-        </div>
-
-        {/* Tactile Upvote Pill */}
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className="flex items-center rounded-md border border-[#E2E8F0] bg-[#F8FAFC] p-0.5 shrink-0"
-        >
-          <button
-            onClick={(e) => handleVote(e, 1)}
-            title="Upvote"
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold transition-all cursor-pointer ${
-              userVote === 1
-                ? "bg-[#10B981] text-white shadow-2xs"
-                : "text-[#0F172A] hover:bg-[#F1F5F9]"
-            }`}
-          >
-            <ArrowBigUp className={`h-4 w-4 ${userVote === 1 ? "fill-white" : ""}`} />
-            <span className="font-mono tabular-nums">{score}</span>
-          </button>
-
-          <button
-            onClick={(e) => handleVote(e, -1)}
-            title="Downvote"
-            className={`p-1 rounded transition-colors cursor-pointer ${
-              userVote === -1
-                ? "text-[#DC2626] bg-red-50"
-                : "text-[#64748B] hover:text-[#DC2626] hover:bg-[#F1F5F9]"
-            }`}
-          >
-            <ArrowBigDown className={`h-4 w-4 ${userVote === -1 ? "fill-[#DC2626]" : ""}`} />
-          </button>
         </div>
       </div>
 
-      {/* Post Title */}
-      <h2 className="text-lg sm:text-xl font-bold tracking-tight text-[#0F172A] leading-snug group-hover:text-[#059669] transition-colors mb-2.5">
-        {post.title}
-      </h2>
-
-      {/* Photo / Image Content */}
-      {post.images && post.images.length > 0 && (
-        <div className="my-3.5 overflow-hidden rounded-md border border-[#E2E8F0] bg-[#F8FAFC]">
-          {post.images.length === 1 ? (
-            <div className="relative max-h-[480px] overflow-hidden flex items-center justify-center bg-[#F8FAFC]">
+      {/* Bottom Author + Subscribe + Compact Icon Metrics */}
+      <div className="px-4 sm:px-5 pb-4 pt-3 border-t border-[#F4F4F5] space-y-3">
+        {/* Instagram-style Author Row + Subscribe */}
+        <div
+          className="flex items-center justify-between gap-2"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center gap-2 min-w-0 text-xs">
+            {post.author.avatar && (
               <img
-                src={post.images[0]}
-                alt=""
-                className="w-full max-h-[480px] object-cover group-hover:scale-[1.008] transition-transform duration-300"
-                loading="lazy"
+                src={post.author.avatar}
+                alt={authorName}
+                className="h-6 w-6 rounded-full object-cover border border-[#E4E4E7] shrink-0"
               />
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-1.5 p-1.5">
-              {post.images.slice(0, 4).map((img, idx) => (
-                <div key={idx} className="relative aspect-video overflow-hidden rounded bg-[#F1F5F9]">
-                  <img
-                    src={img}
-                    alt=""
-                    className="h-full w-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+            )}
+            <span className="font-medium text-[#111315] truncate">{authorName}</span>
+            {formatTimeAgo(post.createdAt) && (
+              <span suppressHydrationWarning className="text-[#71717A] tabular-nums shrink-0">
+                · {formatTimeAgo(post.createdAt)}
+              </span>
+            )}
+          </div>
 
-      {/* Content text preview */}
-      {post.content && (
-        <p className="text-xs sm:text-sm text-[#475569] leading-relaxed line-clamp-3 mb-3.5 whitespace-pre-line font-normal">
-          {post.content}
-        </p>
-      )}
-
-      {/* Tags */}
-      {post.tags && post.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-3.5">
-          {post.tags.map((t, idx) => (
-            <span
-              key={idx}
-              className="rounded border border-[#E2E8F0] bg-[#F8FAFC] px-2 py-0.5 text-[11px] font-mono font-medium text-[#475569]"
+          {onSubscribeAuthor && !isOwn && (
+            <button
+              type="button"
+              onClick={() => onSubscribeAuthor(authorId, authorName)}
+              aria-pressed={isAuthorSubscribed}
+              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold transition-colors cursor-pointer shrink-0 ${
+                isAuthorSubscribed
+                  ? "border border-[#0F766E]/25 bg-[#F0FDFA] text-[#0F766E]"
+                  : "bg-[#111315] text-white hover:bg-[#0F766E]"
+              }`}
             >
-              #{t}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Footer Actions */}
-      <div className="flex items-center gap-5 pt-3 border-t border-[#E2E8F0] text-xs text-[#475569]">
-        <button
-          onClick={() => onSelectPost(post)}
-          className="flex items-center gap-1.5 hover:text-[#0F172A] transition-colors cursor-pointer"
-        >
-          <MessageSquare className="h-4 w-4" />
-          <span className="font-medium tabular-nums">{post.commentsCount} Comments</span>
-        </button>
-
-        <button
-          onClick={handleShare}
-          className="flex items-center gap-1.5 hover:text-[#0F172A] transition-colors cursor-pointer"
-        >
-          {copied ? (
-            <span className="text-[#059669] font-semibold">Copied!</span>
-          ) : (
-            <>
-              <Share2 className="h-4 w-4" />
-              <span>Share</span>
-            </>
+              {isAuthorSubscribed ? (
+                <>
+                  <Check className="h-3 w-3 stroke-[2.5]" />
+                  <span>Subscribed</span>
+                </>
+              ) : (
+                <>
+                  <UserPlus className="h-3 w-3" />
+                  <span>Subscribe</span>
+                </>
+              )}
+            </button>
           )}
-        </button>
+        </div>
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setSaved(!saved);
-          }}
-          className={`flex items-center gap-1.5 hover:text-[#0F172A] transition-colors cursor-pointer ${
-            saved ? "text-[#059669] font-semibold" : ""
-          }`}
+        {/* Minimal Icon Footer */}
+        <div
+          className="flex items-center gap-4 text-xs text-[#71717A]"
+          onClick={(e) => e.stopPropagation()}
         >
-          <Bookmark className={`h-4 w-4 ${saved ? "fill-[#059669]" : ""}`} />
-          <span>{saved ? "Saved" : "Save"}</span>
-        </button>
-
-        {currentUser && (currentUser.role === "admin" || currentUser.id === post.author?.id) && (
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (confirm("Delete this post?")) {
-                if (onDeletePost) onDeletePost(post.id);
-              }
-            }}
-            title="Delete post"
-            className="ml-auto text-[#DC2626] hover:text-red-800 text-xs cursor-pointer p-1"
+            type="button"
+            onClick={handleUpvote}
+            aria-label="Upvote"
+            aria-pressed={userVote === 1}
+            className={`inline-flex items-center gap-1 tabular-nums transition-colors cursor-pointer ${
+              userVote === 1 ? "text-[#0F766E] font-semibold" : "hover:text-[#111315]"
+            }`}
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            <ArrowUp className="h-3.5 w-3.5" />
+            <span>{score}</span>
           </button>
-        )}
+
+          <button
+            type="button"
+            onClick={() => onSelectPost(post)}
+            aria-label="Comments"
+            className="inline-flex items-center gap-1 hover:text-[#111315] tabular-nums transition-colors cursor-pointer"
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
+            <span>{post.commentsCount}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSaved(!saved)}
+            aria-label={saved ? "Saved" : "Save"}
+            aria-pressed={saved}
+            className={`transition-colors cursor-pointer ${
+              saved ? "text-[#0F766E]" : "hover:text-[#111315]"
+            }`}
+          >
+            <Bookmark className={`h-3.5 w-3.5 ${saved ? "fill-[#0F766E]" : ""}`} />
+          </button>
+
+          <button
+            type="button"
+            onClick={handleShare}
+            aria-label="Copy link"
+            title="Copy link"
+            className="hover:text-[#111315] transition-colors cursor-pointer"
+          >
+            {copied ? (
+              <Check className="h-3.5 w-3.5 text-[#0F766E]" />
+            ) : (
+              <Share2 className="h-3.5 w-3.5" />
+            )}
+          </button>
+
+          {canDelete && (
+            <button
+              type="button"
+              onClick={() => {
+                if (confirm("Delete this post?")) {
+                  onDeletePost?.(post.id);
+                }
+              }}
+              aria-label="Delete"
+              title="Delete"
+              className="ml-auto text-[#A1A1AA] hover:text-[#DC2626] transition-colors cursor-pointer"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
       </div>
     </article>
   );

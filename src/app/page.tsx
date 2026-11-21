@@ -3,16 +3,16 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { CheckCircle2, X } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
-import { SidebarLeft } from "@/components/SidebarLeft";
-import { SidebarRight } from "@/components/SidebarRight";
+import { FeaturedStoryHero } from "@/components/FeaturedStoryHero";
 import { FeedTabs } from "@/components/FeedTabs";
 import { PostCard } from "@/components/PostCard";
+import { DispatchSection } from "@/components/DispatchSection";
+import { CommunityIcon } from "@/components/CommunityIcon";
 import { CreatePostModal } from "@/components/CreatePostModal";
 import { PostDetailModal } from "@/components/PostDetailModal";
 import { AuthModal } from "@/components/AuthModal";
 import { AboutModal } from "@/components/AboutModal";
 import { ContactModal } from "@/components/ContactModal";
-import { CommunityIcon } from "@/components/CommunityIcon";
 import { CommunityType, PostType } from "@/lib/models/types";
 import { SessionUser } from "@/lib/auth";
 
@@ -21,23 +21,18 @@ export default function Home() {
   const [posts, setPosts] = useState<PostType[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // User Auth State
   const [user, setUser] = useState<SessionUser | null>(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authDefaultMode, setAuthDefaultMode] = useState<"login" | "register">("login");
 
-  // Filters & Search
   const [activeCommunity, setActiveCommunity] = useState<string>("all");
   const [sort, setSort] = useState<string>("hot");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  // Subscriptions & Toast State
   const [subscribedChannels, setSubscribedChannels] = useState<string[]>([]);
-  const [subscribedPosts, setSubscribedPosts] = useState<string[]>([]);
-  const [subscriberCount, setSubscriberCount] = useState<number>(0);
+  const [subscribedAuthors, setSubscribedAuthors] = useState<string[]>([]);
   const [toast, setToast] = useState<{ title: string; subtitle?: string } | null>(null);
 
-  // Modals
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [createDefaultType, setCreateDefaultType] = useState<"text" | "image">("text");
   const [selectedPost, setSelectedPost] = useState<PostType | null>(null);
@@ -71,7 +66,6 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, [toast]);
 
-  // Check Current Logged-in User Session on Mount
   useEffect(() => {
     async function checkAuth() {
       try {
@@ -87,7 +81,6 @@ export default function Home() {
     void checkAuth();
   }, []);
 
-  // Fetch initial subscriptions
   useEffect(() => {
     async function loadSubscriptions() {
       try {
@@ -99,11 +92,8 @@ export default function Home() {
           if (Array.isArray(data.subscribedChannels)) {
             setSubscribedChannels(data.subscribedChannels);
           }
-          if (Array.isArray(data.subscribedPosts)) {
-            setSubscribedPosts(data.subscribedPosts);
-          }
-          if (typeof data.totalSubscribers === "number") {
-            setSubscriberCount(data.totalSubscribers);
+          if (Array.isArray(data.subscribedAuthors)) {
+            setSubscribedAuthors(data.subscribedAuthors);
           }
         }
       } catch (err) {
@@ -113,7 +103,6 @@ export default function Home() {
     void loadSubscriptions();
   }, [getOrCreateClientId, user?.id]);
 
-  // Fetch Communities
   useEffect(() => {
     async function loadCommunities() {
       try {
@@ -129,7 +118,6 @@ export default function Home() {
     void loadCommunities();
   }, []);
 
-  // Fetch Posts based on community, sort & search
   useEffect(() => {
     let active = true;
     async function loadPosts() {
@@ -156,65 +144,21 @@ export default function Home() {
     };
   }, [activeCommunity, sort, searchQuery]);
 
-  const handleSubscribe = async ({
-    channelSlug = "publication",
-    targetUserId = "usr_sandeep_author",
-    targetAuthorName = "Sandeep Kumar",
-    postId,
-    postTitle,
-    email,
-  }: {
-    channelSlug?: string;
-    targetUserId?: string;
-    targetAuthorName?: string;
-    postId?: string;
-    postTitle?: string;
-    email?: string;
-  }) => {
-    const previousChannels = [...subscribedChannels];
-    const previousPosts = [...subscribedPosts];
-    const previousCount = subscriberCount;
+  // Instagram-style Author Subscribe: subscribing to an author notifies you whenever THAT author posts anything new
+  const handleSubscribeAuthor = async (authorId: string, authorName: string) => {
+    const previousAuthors = [...subscribedAuthors];
+    const isCurrentlySubscribed = subscribedAuthors.includes(authorId);
+    const shouldSubscribe = !isCurrentlySubscribed;
 
-    const isPostSub = Boolean(postId);
-    const isCurrentlySubscribed = isPostSub
-      ? subscribedPosts.includes(postId as string)
-      : subscribedChannels.includes(channelSlug);
-    const shouldSubscribe = email ? true : !isCurrentlySubscribed;
-
-    // Optimistic state flip
     if (shouldSubscribe) {
-      if (isPostSub && postId) {
-        if (!isCurrentlySubscribed) {
-          setSubscribedPosts((prev) => [...prev, postId]);
-        }
-        showToast(
-          "Subscribed to post",
-          "You will get notified on new replies & updates"
-        );
-      } else {
-        if (!isCurrentlySubscribed) {
-          setSubscribedChannels((prev) => [...prev, channelSlug]);
-          if (previousChannels.length === 0 && previousPosts.length === 0) {
-            setSubscriberCount((c) => c + 1);
-          }
-        }
-        const targetLabel =
-          channelSlug === "publication" ? "TechPeppy Publication" : `t/${channelSlug}`;
-        showToast(
-          `Subscribed to ${targetLabel}`,
-          `Real-time alert sent to ${targetAuthorName}`
-        );
-      }
-    } else if (isPostSub && postId) {
-      setSubscribedPosts((prev) => prev.filter((id) => id !== postId));
-      showToast("Unsubscribed from post");
-    } else {
-      setSubscribedChannels((prev) => prev.filter((ch) => ch !== channelSlug));
+      setSubscribedAuthors((prev) => [...prev, authorId]);
       showToast(
-        channelSlug === "publication"
-          ? "Unsubscribed from TechPeppy"
-          : `Unsubscribed from t/${channelSlug}`
+        `Subscribed to ${authorName}`,
+        `You'll get notified whenever ${authorName} publishes a new post`
       );
+    } else {
+      setSubscribedAuthors((prev) => prev.filter((id) => id !== authorId));
+      showToast(`Unsubscribed from ${authorName}`);
     }
 
     try {
@@ -223,23 +167,16 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          channelSlug,
-          targetUserId,
-          postId,
-          postTitle,
-          subscriberEmail: email,
+          channelSlug: "author",
+          targetUserId: authorId,
           clientId: cid,
-          action: email ? "subscribe" : "toggle",
+          action: "toggle",
         }),
       });
 
       const data = await res.json();
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Subscription failed");
-      }
-
-      if (typeof data.totalSubscribers === "number") {
-        setSubscriberCount(data.totalSubscribers);
       }
 
       if (data.subscribed && data.notification) {
@@ -251,10 +188,56 @@ export default function Home() {
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Please try again";
-      // Revert optimistic update on failure
+      setSubscribedAuthors(previousAuthors);
+      showToast("Subscription error", message);
+    }
+  };
+
+  // Publication email newsletter subscribe
+  const handleSubscribePublication = async (email?: string) => {
+    const previousChannels = [...subscribedChannels];
+    const isCurrentlySubscribed = subscribedChannels.includes("publication");
+    const shouldSubscribe = email ? true : !isCurrentlySubscribed;
+
+    if (shouldSubscribe) {
+      if (!isCurrentlySubscribed) {
+        setSubscribedChannels((prev) => [...prev, "publication"]);
+      }
+      showToast("Subscribed to TechPeppy");
+    } else {
+      setSubscribedChannels((prev) => prev.filter((ch) => ch !== "publication"));
+      showToast("Unsubscribed from TechPeppy");
+    }
+
+    try {
+      const cid = getOrCreateClientId();
+      const res = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channelSlug: "publication",
+          targetUserId: "usr_sandeep_author",
+          subscriberEmail: email,
+          clientId: cid,
+          action: email ? "subscribe" : "toggle",
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Subscription failed");
+      }
+
+      if (data.subscribed && data.notification) {
+        window.dispatchEvent(
+          new CustomEvent("techpeppy:notification-created", {
+            detail: data.notification,
+          })
+        );
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Please try again";
       setSubscribedChannels(previousChannels);
-      setSubscribedPosts(previousPosts);
-      setSubscriberCount(previousCount);
       showToast("Subscription error", message);
     }
   };
@@ -325,23 +308,34 @@ export default function Home() {
     }
   };
 
+  const openWriteFlow = (type: "text" | "image" = "text") => {
+    if (!user) {
+      setAuthDefaultMode("login");
+      setIsAuthOpen(true);
+    } else {
+      setCreateDefaultType(type);
+      setIsCreateOpen(true);
+    }
+  };
+
   const currentCommunityObj = communities.find((c) => c.slug === activeCommunity);
 
+  const isFrontPage =
+    !loading && activeCommunity === "all" && !searchQuery.trim() && posts.length > 0;
+  const leadPost = isFrontPage ? posts[0] : null;
+  const gridPosts = isFrontPage ? posts.slice(1) : posts;
+
+  const selectedPostAuthorId = selectedPost
+    ? selectedPost.author?.id || selectedPost.author?.username || "usr_sandeep_author"
+    : "";
+
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A]">
-      {/* Navbar */}
+    <div className="min-h-screen flex flex-col bg-white text-[#111315]">
       <Navbar
+        communities={communities}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
-        openCreateModal={() => {
-          if (!user) {
-            setAuthDefaultMode("login");
-            setIsAuthOpen(true);
-          } else {
-            setCreateDefaultType("text");
-            setIsCreateOpen(true);
-          }
-        }}
+        openCreateModal={() => openWriteFlow("text")}
         activeCommunity={activeCommunity}
         setActiveCommunity={setActiveCommunity}
         user={user}
@@ -355,209 +349,191 @@ export default function Home() {
         onSelectPostById={handleOpenPostById}
       />
 
-      {/* Main Container */}
-      <main className="mx-auto max-w-[1360px] px-4 sm:px-8 py-6">
-        <div className="flex items-start justify-center gap-2">
-          {/* Left Sidebar */}
-          <SidebarLeft
-            communities={communities}
-            activeCommunity={activeCommunity}
-            setActiveCommunity={setActiveCommunity}
-            openCreateModal={() => {
-              if (!user) {
-                setAuthDefaultMode("login");
-                setIsAuthOpen(true);
-              } else {
-                setCreateDefaultType("text");
-                setIsCreateOpen(true);
-              }
-            }}
-          />
+      {/* Full-Bleed Dark Contrast Top Band (Featured Story OR Filtered Section Header) */}
+      {loading ? (
+        <section className="w-full bg-[#111315]">
+          <div className="mx-auto max-w-[1240px] px-5 sm:px-8 py-9 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-6 space-y-4">
+              <div className="h-6 w-32 rounded-md skeleton-pulse-dark" />
+              <div className="h-10 w-full rounded-lg skeleton-pulse-dark" />
+              <div className="h-10 w-4/5 rounded-lg skeleton-pulse-dark" />
+              <div className="h-7 w-48 rounded-full skeleton-pulse-dark" />
+            </div>
+            <div className="lg:col-span-6 aspect-[16/10] rounded-xl skeleton-pulse-dark" />
+          </div>
+        </section>
+      ) : searchQuery.trim() ? (
+        <section className="w-full bg-[#111315] text-white">
+          <div className="mx-auto max-w-[1240px] px-5 sm:px-8 py-7 flex items-center justify-between gap-4">
+            <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-[-0.03em]">
+              &ldquo;{searchQuery.trim()}&rdquo;
+            </h1>
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="rounded-lg border border-[#272A30] bg-[#191C20] hover:bg-[#23272D] px-3.5 py-1.5 text-xs font-medium text-[#FAFAFA] transition-colors cursor-pointer shrink-0"
+            >
+              Clear
+            </button>
+          </div>
+        </section>
+      ) : activeCommunity !== "all" && currentCommunityObj ? (
+        <section className="w-full bg-[#111315] text-white">
+          <div className="mx-auto max-w-[1240px] px-5 sm:px-8 py-7 flex items-center justify-between gap-4">
+            <h1 className="inline-flex items-center gap-3 font-display text-2xl sm:text-3xl font-bold tracking-[-0.03em]">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0F766E] text-white shrink-0">
+                <CommunityIcon slug={currentCommunityObj.slug} className="h-4.5 w-4.5" />
+              </span>
+              <span>{currentCommunityObj.name}</span>
+            </h1>
+            <button
+              type="button"
+              onClick={() => openWriteFlow("text")}
+              className="rounded-lg bg-white hover:bg-[#E4E4E7] px-4 py-1.5 text-xs font-semibold text-[#111315] transition-colors cursor-pointer shrink-0"
+            >
+              Write
+            </button>
+          </div>
+        </section>
+      ) : leadPost ? (
+        <FeaturedStoryHero
+          leadPost={leadPost}
+          onSelectPost={(p) => setSelectedPost(p)}
+          onVote={handleVote}
+          setActiveCommunity={setActiveCommunity}
+          currentUser={user}
+          onDeletePost={handleDeletePost}
+          subscribedAuthors={subscribedAuthors}
+          onSubscribeAuthor={handleSubscribeAuthor}
+        />
+      ) : null}
 
-          {/* Central Main Feed (Preserved Structure & Data Flow) */}
-          <section className="flex-1 max-w-[760px] min-w-0">
-            {/* Publication Showcase Hero (When viewing All Feeds) */}
-            {activeCommunity === "all" && !searchQuery && (
-              <div className="mb-4 rounded-lg border border-[#E2E8F0] bg-white p-5 sm:p-6 shadow-card relative overflow-hidden">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-mono font-medium bg-[#ECFDF5] text-[#059669] border border-[#10B981]/30">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#10B981] animate-pulse" />
-                    Engineering Publication & Architecture Hub
-                  </span>
+      {/* Crisp Pure White Visual Card Grid */}
+      <main className="w-full flex-1 mx-auto max-w-[1240px] px-5 sm:px-8">
+        {loading ? (
+          <div className="py-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="rounded-xl border border-[#E4E4E7] overflow-hidden bg-white"
+              >
+                <div className="aspect-[16/10] skeleton-pulse" />
+                <div className="p-5 space-y-3">
+                  <div className="h-4 w-24 rounded skeleton-pulse" />
+                  <div className="h-6 w-full rounded skeleton-pulse" />
+                  <div className="h-4 w-3/4 rounded skeleton-pulse" />
                 </div>
-                <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#0F172A] mb-1.5">
-                  Decoupled Systems, Production AI & Workstations
-                </h1>
-                <p className="text-xs sm:text-sm text-[#475569] leading-relaxed max-w-2xl">
-                  High-signal technical rationale, microservice blueprints, local LLM orchestration, and ergonomic workspace gear curated by Sandeep Kumar.
-                </p>
               </div>
-            )}
-
-            {/* Active Channel Header (if filtered) */}
-            {activeCommunity !== "all" && currentCommunityObj && (
-              <div className="mb-4 rounded-lg border border-[#E2E8F0] bg-white p-5 shadow-card">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3.5">
-                    <CommunityIcon
-                      slug={currentCommunityObj.slug}
-                      variant="badge"
-                      className="h-6 w-6"
-                    />
-                    <div>
-                      <h1 className="text-lg font-bold text-[#0F172A]">
-                        {currentCommunityObj.name}
-                      </h1>
-                      <p className="text-xs text-[#475569] mt-0.5 font-mono">
-                        t/{currentCommunityObj.slug} • {currentCommunityObj.description}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      if (!user) {
-                        setAuthDefaultMode("login");
-                        setIsAuthOpen(true);
-                      } else {
-                        setCreateDefaultType("text");
-                        setIsCreateOpen(true);
-                      }
-                    }}
-                    className="rounded-md bg-[#0F172A] hover:bg-[#1E293B] px-4 py-2 text-xs font-semibold text-white transition-colors cursor-pointer shrink-0"
-                  >
-                    Post Here
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Quick Post & Filter Bar */}
+            ))}
+          </div>
+        ) : (
+          <>
             <FeedTabs
+              title={isFrontPage ? "Latest Stories" : "Stories"}
               sort={sort}
               setSort={setSort}
-              openCreateModal={(type) => {
-                if (!user) {
-                  setAuthDefaultMode("login");
-                  setIsAuthOpen(true);
-                } else {
-                  setCreateDefaultType(type || "text");
-                  setIsCreateOpen(true);
-                }
-              }}
-              activeCommunity={activeCommunity}
-              communityName={currentCommunityObj?.name}
-              userAvatar={user?.avatar}
-              userName={user?.name}
             />
 
-            {/* Posts Feed */}
-            {loading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((n) => (
-                  <div
-                    key={n}
-                    className="h-32 rounded-lg border border-[#E2E8F0] bg-white skeleton-pulse"
-                  />
-                ))}
-              </div>
-            ) : posts.length === 0 ? (
-              <div className="rounded-lg border border-[#E2E8F0] bg-white p-8 text-center shadow-card">
-                <p className="text-sm font-semibold text-[#0F172A] mb-1">
-                  No posts yet in this feed
-                </p>
-                <p className="text-xs text-[#475569] mb-4">
-                  {searchQuery
-                    ? `No matching results for "${searchQuery}".`
-                    : "Be the first to share an architectural tip, discussion, or setup!"}
-                </p>
-                <button
-                  onClick={() => {
-                    if (!user) {
-                      setAuthDefaultMode("login");
-                      setIsAuthOpen(true);
-                    } else {
-                      setIsCreateOpen(true);
-                    }
-                  }}
-                  className="rounded-md bg-[#0F172A] hover:bg-[#1E293B] px-4 py-2 text-xs font-semibold text-white transition-colors cursor-pointer"
-                >
-                  Create Post
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {posts.map((post) => (
-                  <PostCard
-                    key={post.id}
-                    post={post}
-                    onSelectPost={(p) => setSelectedPost(p)}
-                    onVote={handleVote}
-                    setActiveCommunity={setActiveCommunity}
-                    currentUser={user}
-                    onDeletePost={handleDeletePost}
-                    isSubscribed={subscribedPosts.includes(post.id)}
-                    onSubscribeChannel={(channelSlug, authorId, authorName, postId, postTitle) =>
-                      handleSubscribe({
-                        channelSlug,
-                        targetUserId: authorId || "usr_sandeep_author",
-                        targetAuthorName: authorName || "Sandeep Kumar",
-                        postId,
-                        postTitle,
-                      })
-                    }
-                  />
-                ))}
-              </div>
-            )}
-          </section>
+            <section className="w-full pt-5 pb-10">
+              {gridPosts.length === 0 ? (
+                <div className="py-16 text-center rounded-xl border border-[#E4E4E7] bg-[#F4F4F5]/50">
+                  <p className="font-display text-lg font-semibold text-[#111315] mb-4">
+                    No posts yet
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => openWriteFlow("text")}
+                    className="rounded-lg bg-[#111315] hover:bg-[#0F766E] px-5 py-2 text-xs font-semibold text-white transition-colors cursor-pointer"
+                  >
+                    Write a post
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {gridPosts.map((post) => {
+                    const authorKey =
+                      post.author?.id || post.author?.username || "usr_sandeep_author";
+                    return (
+                      <PostCard
+                        key={post.id}
+                        post={post}
+                        onSelectPost={(p) => setSelectedPost(p)}
+                        onVote={handleVote}
+                        setActiveCommunity={setActiveCommunity}
+                        currentUser={user}
+                        onDeletePost={handleDeletePost}
+                        isAuthorSubscribed={subscribedAuthors.includes(authorKey)}
+                        onSubscribeAuthor={handleSubscribeAuthor}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          </>
+        )}
 
-          {/* Right Sidebar */}
-          <SidebarRight
-            openAboutModal={() => setIsAboutOpen(true)}
-            openContactModal={() => setIsContactOpen(true)}
-            setActiveCommunity={setActiveCommunity}
-            isPublicationSubscribed={subscribedChannels.includes("publication")}
-            subscriberCount={subscriberCount}
-            onSubscribePublication={(email) =>
-              handleSubscribe({
-                channelSlug: "publication",
-                targetUserId: "usr_sandeep_author",
-                targetAuthorName: "Sandeep Kumar",
-                email,
-              })
-            }
-            currentUser={user}
-          />
-        </div>
+        <DispatchSection
+          isPublicationSubscribed={subscribedChannels.includes("publication")}
+          onSubscribePublication={handleSubscribePublication}
+          currentUser={user}
+        />
       </main>
 
-      {/* Subtle Toast Confirmation */}
+      <footer className="w-full border-t border-[#E4E4E7] bg-white mt-auto">
+        <div className="mx-auto max-w-[1240px] px-5 sm:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#71717A]">
+          <span className="font-display text-sm font-bold text-[#111315]">
+            TechPeppy · © 2026
+          </span>
+
+          <div className="flex items-center gap-6">
+            <button
+              type="button"
+              onClick={() => setIsAboutOpen(true)}
+              className="hover:text-[#111315] transition-colors cursor-pointer"
+            >
+              About
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsContactOpen(true)}
+              className="hover:text-[#111315] transition-colors cursor-pointer"
+            >
+              Contact
+            </button>
+            <a
+              href="mailto:admin@techpeppy.com"
+              className="hover:text-[#111315] transition-colors"
+            >
+              admin@techpeppy.com
+            </a>
+          </div>
+        </div>
+      </footer>
+
       {toast && (
         <div
           role="status"
-          className="fixed bottom-5 right-5 z-50 flex items-start gap-3 rounded-md border border-[#1E293B] bg-[#0F172A] px-4 py-3 text-white shadow-xl max-w-sm"
+          className="fixed bottom-5 right-5 z-50 flex items-start gap-3 rounded-xl border border-[#272A30] bg-[#111315] px-4 py-3 text-[#FAFAFA] shadow-2xl max-w-sm"
         >
-          <CheckCircle2 className="h-4 w-4 text-[#10B981] shrink-0 mt-0.5" />
+          <CheckCircle2 className="h-4 w-4 text-[#2DD4BF] shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold leading-snug">{toast.title}</p>
             {toast.subtitle && (
-              <p className="mt-0.5 font-mono text-[11px] text-[#94A3B8] leading-snug">
-                {toast.subtitle}
-              </p>
+              <p className="mt-0.5 text-xs text-[#A1A1AA] leading-snug">{toast.subtitle}</p>
             )}
           </div>
           <button
             type="button"
             onClick={() => setToast(null)}
-            className="text-[#64748B] hover:text-white cursor-pointer"
-            aria-label="Dismiss notification"
+            className="text-[#71717A] hover:text-white cursor-pointer"
+            aria-label="Dismiss"
           >
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
       )}
 
-      {/* Auth Modal */}
       <AuthModal
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
@@ -565,7 +541,6 @@ export default function Home() {
         defaultMode={authDefaultMode}
       />
 
-      {/* Create Post Modal */}
       <CreatePostModal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
@@ -574,7 +549,6 @@ export default function Home() {
         onPostCreated={handlePostCreated}
       />
 
-      {/* Post Detail Modal */}
       <PostDetailModal
         post={selectedPost}
         onClose={() => setSelectedPost(null)}
@@ -585,16 +559,18 @@ export default function Home() {
           setAuthDefaultMode("login");
           setIsAuthOpen(true);
         }}
+        isAuthorSubscribed={Boolean(
+          selectedPostAuthorId && subscribedAuthors.includes(selectedPostAuthorId)
+        )}
+        onSubscribeAuthor={handleSubscribeAuthor}
       />
 
-      {/* About Modal */}
       <AboutModal
         isOpen={isAboutOpen}
         onClose={() => setIsAboutOpen(false)}
         openContactModal={() => setIsContactOpen(true)}
       />
 
-      {/* Contact Modal */}
       <ContactModal
         isOpen={isContactOpen}
         onClose={() => setIsContactOpen(false)}

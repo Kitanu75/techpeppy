@@ -630,6 +630,7 @@ function mapNotificationDoc(d: RawNotificationDoc): NotificationType {
 export async function getSubscriptions(subscriberId?: string): Promise<{
   subscriptions: SubscriptionType[];
   subscribedChannels: string[];
+  subscribedAuthors: string[];
   subscribedPosts: string[];
   totalSubscribers: number;
 }> {
@@ -646,8 +647,16 @@ export async function getSubscriptions(subscriberId?: string): Promise<{
       const subscribedChannels = Array.from(
         new Set(
           subscriptions
-            .filter((s) => !s.postId)
+            .filter((s) => !s.postId && s.channelSlug !== "author")
             .map((s) => s.channelSlug || "publication")
+        )
+      );
+      const subscribedAuthors = Array.from(
+        new Set(
+          subscriptions
+            .filter((s) => !s.postId && s.channelSlug === "author")
+            .map((s) => s.targetUserId)
+            .filter((id): id is string => Boolean(id))
         )
       );
       const subscribedPosts = Array.from(
@@ -657,6 +666,7 @@ export async function getSubscriptions(subscriberId?: string): Promise<{
       return {
         subscriptions,
         subscribedChannels,
+        subscribedAuthors,
         subscribedPosts,
         totalSubscribers: uniqueSubscribers.size,
       };
@@ -672,8 +682,16 @@ export async function getSubscriptions(subscriberId?: string): Promise<{
   const subscribedChannels = Array.from(
     new Set(
       subscriptions
-        .filter((s) => !s.postId)
+        .filter((s) => !s.postId && s.channelSlug !== "author")
         .map((s) => s.channelSlug || "publication")
+    )
+  );
+  const subscribedAuthors = Array.from(
+    new Set(
+      subscriptions
+        .filter((s) => !s.postId && s.channelSlug === "author")
+        .map((s) => s.targetUserId)
+        .filter((id): id is string => Boolean(id))
     )
   );
   const subscribedPosts = Array.from(
@@ -683,6 +701,7 @@ export async function getSubscriptions(subscriberId?: string): Promise<{
   return {
     subscriptions,
     subscribedChannels,
+    subscribedAuthors,
     subscribedPosts,
     totalSubscribers: uniqueMemSubscribers.size,
   };
@@ -717,13 +736,16 @@ export async function createOrToggleSubscription(params: {
   const action = params.action || "toggle";
 
   const shortPostTitle = postTitle ? truncateText(postTitle, 52) : "";
-  const notificationMessage = postId
-    ? shortPostTitle
-      ? `subscribed to your post "${shortPostTitle}" in t/${channelSlug}`
-      : `subscribed to your post in t/${channelSlug}`
-    : channelSlug && channelSlug !== "publication"
-      ? `subscribed to your updates in t/${channelSlug}`
-      : "subscribed to your publication";
+  const notificationMessage =
+    channelSlug === "author"
+      ? "subscribed to your posts"
+      : postId
+        ? shortPostTitle
+          ? `subscribed to your post "${shortPostTitle}"`
+          : "subscribed to your post"
+        : channelSlug && channelSlug !== "publication"
+          ? `subscribed to ${channelSlug}`
+          : "subscribed to TechPeppy";
 
   const db = await connectToDatabase();
   if (db) {
@@ -1092,13 +1114,25 @@ async function notifyPostSubscribersOnComment(postId: string, comment: CommentTy
 
 async function notifyChannelSubscribersOnNewPost(post: PostType) {
   const recipientIds: string[] = [];
+  const authorKeys = Array.from(
+    new Set([post.author?.id, post.author?.username].filter((v): v is string => Boolean(v)))
+  );
   const db = await connectToDatabase();
 
   if (db) {
     try {
+      const orFilters: Record<string, unknown>[] = [
+        { postId: "", channelSlug: { $in: [post.communitySlug, "publication"] } },
+      ];
+      if (authorKeys.length > 0) {
+        orFilters.push({
+          postId: "",
+          channelSlug: "author",
+          targetUserId: { $in: authorKeys },
+        });
+      }
       const subs = (await SubscriptionModel.find({
-        postId: "",
-        channelSlug: { $in: [post.communitySlug, "publication"] },
+        $or: orFilters,
       }).lean()) as unknown as RawSubscriptionDoc[];
       subs.forEach((s) => recipientIds.push(s.subscriberId));
     } catch (err) {
@@ -1109,7 +1143,9 @@ async function notifyChannelSubscribersOnNewPost(post: PostType) {
       .filter(
         (s) =>
           !s.postId &&
-          (s.channelSlug === post.communitySlug || s.channelSlug === "publication")
+          (s.channelSlug === post.communitySlug ||
+            s.channelSlug === "publication" ||
+            (s.channelSlug === "author" && authorKeys.includes(s.targetUserId)))
       )
       .forEach((s) => recipientIds.push(s.subscriberId));
   }
@@ -1125,7 +1161,7 @@ async function notifyChannelSubscribersOnNewPost(post: PostType) {
     channelSlug: post.communitySlug,
     postId: post.id,
     postTitle: post.title,
-    message: `published a new post in t/${post.communitySlug}: "${shortTitle}"`,
+    message: `published a new post: "${shortTitle}"`,
   });
 }
 

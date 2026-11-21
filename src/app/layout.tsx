@@ -1,21 +1,22 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-display",
   subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
-  title: "TechPeppy — Software Architecture, AI Systems & Workstations",
+  title: "TechPeppy — Software Architecture, AI Systems & Desk Setups",
   description:
-    "Engineering publication and developer platform focused on decoupled software architecture, production AI/RAG orchestration, data pipelines, and workspace gear.",
+    "Modern engineering publication covering software architecture, applied AI systems, data pipelines, tech news, and developer workspaces.",
   keywords: [
     "Software Architecture",
     "Headless CMS",
@@ -27,8 +28,8 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Sandeep Kumar" }, { name: "TechPeppy" }],
   openGraph: {
-    title: "TechPeppy — Software Architecture, AI Systems & Workstations",
-    description: "Engineering publication and developer platform by Sandeep Kumar.",
+    title: "TechPeppy — Software Architecture, AI Systems & Desk Setups",
+    description: "Modern engineering publication by Sandeep Kumar.",
     url: "https://techpeppy.com",
     siteName: "TechPeppy",
     type: "website",
@@ -43,11 +44,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${plusJakartaSans.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body
-        className="min-h-full flex flex-col bg-[#F8FAFC] text-[#0F172A]"
+        className="min-h-full flex flex-col bg-white text-[#111315]"
         suppressHydrationWarning
       >
         {children}

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Bell, CheckCheck, UserPlus, Sparkles, MessageSquare, FileText } from "lucide-react";
+import { Bell, CheckCheck, UserPlus, MessageSquare, FileText } from "lucide-react";
 import { NotificationType } from "@/lib/models/types";
 import { SessionUser } from "@/lib/auth";
 
@@ -55,7 +55,6 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     }
   }, [buildNotificationsUrl]);
 
-  // Initial load + 5-second polling + window focus sync
   useEffect(() => {
     let active = true;
     const runFetch = async () => {
@@ -91,7 +90,6 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     };
   }, [buildNotificationsUrl, currentUser?.id]);
 
-  // Instant 0ms update when a local subscription or comment happens in the same session
   useEffect(() => {
     const handleCreated = (event: Event) => {
       const customEvent = event as CustomEvent<NotificationType | undefined>;
@@ -113,7 +111,6 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     };
   }, [syncNotifications]);
 
-  // Close popover on outside click or Escape
   useEffect(() => {
     const handleMouseDown = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -142,7 +139,6 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
   const handleMarkAllRead = async () => {
     if (unreadCount === 0) return;
 
-    // Optimistic update
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
 
     try {
@@ -165,7 +161,6 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
 
   const handleItemClick = async (notif: NotificationType) => {
     if (!notif.isRead) {
-      // Optimistic mark read
       setNotifications((prev) =>
         prev.map((n) => (n.id === notif.id ? { ...n, isRead: true } : n))
       );
@@ -188,7 +183,12 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
       return;
     }
 
-    if (notif.channelSlug && notif.channelSlug !== "publication" && onSelectChannel) {
+    if (
+      notif.channelSlug &&
+      notif.channelSlug !== "publication" &&
+      notif.channelSlug !== "author" &&
+      onSelectChannel
+    ) {
       onSelectChannel(notif.channelSlug);
       setIsOpen(false);
     }
@@ -219,12 +219,12 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
 
   const renderTypeIcon = (type: NotificationType["type"]) => {
     if (type === "POST_COMMENT") {
-      return <MessageSquare className="h-3 w-3 text-[#10B981]" />;
+      return <MessageSquare className="h-3 w-3 text-[#0F766E]" />;
     }
     if (type === "NEW_POST") {
-      return <FileText className="h-3 w-3 text-[#0F172A]" />;
+      return <FileText className="h-3 w-3 text-[#52525B]" />;
     }
-    return <UserPlus className="h-3 w-3 text-[#059669]" />;
+    return <UserPlus className="h-3 w-3 text-[#0F766E]" />;
   };
 
   return (
@@ -238,17 +238,17 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
         }}
         aria-label="Notifications"
         title="Notifications"
-        className={`relative flex h-8.5 w-8.5 items-center justify-center rounded-md border transition-colors cursor-pointer ${
+        className={`relative flex h-8.5 w-8.5 items-center justify-center rounded-lg border transition-colors cursor-pointer ${
           isOpen
-            ? "border-[#0F172A] bg-[#F1F5F9] text-[#0F172A]"
-            : "border-[#E2E8F0] bg-white hover:bg-[#F1F5F9] hover:border-[#CBD5E1] text-[#0F172A]"
+            ? "border-[#3F434D] bg-[#23272D] text-white"
+            : "border-[#272A30] bg-[#191C20] text-[#A1A1AA] hover:border-[#3F434D] hover:text-white"
         }`}
       >
-        <Bell className="h-4 w-4 stroke-[1.9]" />
+        <Bell className="h-4 w-4 stroke-[1.8]" />
         {unreadCount > 0 && (
           <span
             aria-label={`${unreadCount} unread notifications`}
-            className="absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#059669] px-1 font-mono text-[10px] font-bold leading-none text-white tabular-nums shadow-xs ring-2 ring-white"
+            className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#0F766E] px-1 text-[10px] font-semibold leading-none text-white tabular-nums ring-2 ring-[#111315]"
           >
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
@@ -256,85 +256,68 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-md border border-[#E2E8F0] bg-white shadow-xl z-50 overflow-hidden">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-[#E2E8F0] bg-[#F8FAFC] px-3.5 py-2.5">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-xl border border-[#E4E4E7] bg-white shadow-2xl z-50 overflow-hidden text-[#111315]">
+          <div className="flex items-center justify-between border-b border-[#E4E4E7] bg-[#F4F4F5]/70 px-4 py-3">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold tracking-tight text-[#0F172A]">
-                Notifications
-              </span>
-              <span className="rounded bg-white border border-[#E2E8F0] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[#475569] tabular-nums">
-                {unreadCount} unread
-              </span>
+              <span className="font-display text-sm font-bold text-[#111315]">Notifications</span>
+              {unreadCount > 0 && (
+                <span className="text-xs text-[#71717A] tabular-nums">{unreadCount} unread</span>
+              )}
             </div>
 
             <button
               type="button"
               onClick={handleMarkAllRead}
               disabled={unreadCount === 0}
-              className={`flex items-center gap-1 font-mono text-[11px] font-medium transition-colors ${
+              className={`flex items-center gap-1 text-xs transition-colors ${
                 unreadCount > 0
-                  ? "text-[#0F172A] hover:text-[#059669] cursor-pointer"
-                  : "text-[#64748B] cursor-not-allowed"
+                  ? "text-[#52525B] hover:text-[#111315] cursor-pointer"
+                  : "text-[#A1A1AA] cursor-not-allowed"
               }`}
             >
               <CheckCheck className="h-3.5 w-3.5" />
-              <span>Mark all as read</span>
+              <span>Mark all read</span>
             </button>
           </div>
 
-          {/* Filter Tabs */}
-          <div className="flex items-center gap-1 border-b border-[#E2E8F0] bg-white px-3 py-1.5">
+          <div className="flex items-center gap-5 border-b border-[#E4E4E7] px-4">
             <button
               type="button"
               onClick={() => setActiveTab("all")}
-              className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer ${
+              className={`-mb-px border-b-2 py-2 text-xs transition-colors cursor-pointer ${
                 activeTab === "all"
-                  ? "bg-[#0F172A] text-white"
-                  : "text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A]"
+                  ? "border-[#0F766E] font-semibold text-[#111315]"
+                  : "border-transparent text-[#71717A] hover:text-[#111315]"
               }`}
             >
-              <span>All</span>
-              <span className="font-mono text-[10px] opacity-80 tabular-nums">
-                {notifications.length}
-              </span>
+              All ({notifications.length})
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("subscribers")}
-              className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer ${
+              className={`-mb-px border-b-2 py-2 text-xs transition-colors cursor-pointer ${
                 activeTab === "subscribers"
-                  ? "bg-[#0F172A] text-white"
-                  : "text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A]"
+                  ? "border-[#0F766E] font-semibold text-[#111315]"
+                  : "border-transparent text-[#71717A] hover:text-[#111315]"
               }`}
             >
-              <UserPlus className="h-3 w-3" />
-              <span>Subscribers</span>
-              <span className="font-mono text-[10px] opacity-80 tabular-nums">
-                {notifications.filter((n) => n.type === "NEW_SUBSCRIBER").length}
-              </span>
+              Subscribers ({notifications.filter((n) => n.type === "NEW_SUBSCRIBER").length})
             </button>
           </div>
 
-          {/* List Body */}
-          <div className="max-h-80 overflow-y-auto divide-y divide-[#E2E8F0]">
+          <div className="max-h-80 overflow-y-auto divide-y divide-[#E4E4E7]">
             {loading && notifications.length === 0 ? (
               <div className="p-4 space-y-2.5">
                 {[1, 2].map((i) => (
-                  <div key={i} className="h-12 rounded-md skeleton-pulse" />
+                  <div key={i} className="h-12 rounded-lg skeleton-pulse" />
                 ))}
               </div>
             ) : filteredNotifications.length === 0 ? (
               <div className="px-4 py-10 text-center">
-                <div className="mx-auto mb-2.5 flex h-9 w-9 items-center justify-center rounded-md border border-[#E2E8F0] bg-[#F8FAFC] text-[#475569]">
-                  <Sparkles className="h-4 w-4" />
-                </div>
-                <p className="text-xs font-semibold text-[#0F172A]">
-                  No notifications yet
-                </p>
-                <p className="mt-1 text-[11px] text-[#475569] max-w-[240px] mx-auto leading-relaxed">
-                  Subscribe to any post or channel to receive instant updates when new replies or posts arrive.
+                <p className="text-sm font-semibold text-[#111315]">No notifications yet</p>
+                <p className="mt-1 text-xs text-[#71717A] max-w-[240px] mx-auto leading-relaxed">
+                  Subscribe to authors to get notified whenever they publish new stories.
                 </p>
               </div>
             ) : (
@@ -343,54 +326,52 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                   key={notif.id}
                   type="button"
                   onClick={() => handleItemClick(notif)}
-                  className={`w-full flex items-start gap-3 px-3.5 py-3 text-left transition-colors cursor-pointer ${
+                  className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-colors cursor-pointer ${
                     notif.isRead
-                      ? "bg-white hover:bg-[#F8FAFC]"
-                      : "bg-[#ECFDF5]/45 hover:bg-[#ECFDF5]/80"
+                      ? "bg-white hover:bg-[#F4F4F5]/70"
+                      : "bg-[#F0FDFA]/50 hover:bg-[#F0FDFA]"
                   }`}
                 >
-                  {/* Avatar or Initials */}
                   {notif.actorAvatar ? (
                     <img
                       src={notif.actorAvatar}
                       alt={notif.actorName}
-                      className="h-8 w-8 rounded-md border border-[#E2E8F0] bg-[#F8FAFC] object-cover shrink-0"
+                      className="h-8 w-8 rounded-full object-cover shrink-0"
                     />
                   ) : (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-md border border-[#E2E8F0] bg-[#0F172A] font-mono text-[11px] font-bold text-white shrink-0">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F4F4F5] text-xs font-semibold text-[#111315] shrink-0">
                       {getInitials(notif.actorName)}
                     </div>
                   )}
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-[#0F172A] leading-snug">
-                      <span className="font-bold">{notif.actorName}</span>{" "}
-                      <span className="text-[#475569]">{notif.message}</span>
+                    <p className="text-xs text-[#111315] leading-snug">
+                      <span className="font-semibold">{notif.actorName}</span>{" "}
+                      <span className="text-[#52525B]">{notif.message}</span>
                     </p>
 
-                    <div className="mt-1.5 flex items-center gap-2 flex-wrap">
-                      <span className="inline-flex items-center gap-1 rounded border border-[#E2E8F0] bg-[#F8FAFC] px-1.5 py-0.5 font-mono text-[10px] font-medium text-[#0F172A]">
+                    <div className="mt-1.5 flex items-center gap-2 text-[11px] text-[#71717A]">
+                      <span className="inline-flex items-center gap-1">
                         {renderTypeIcon(notif.type)}
                         <span>
-                          {notif.channelSlug && notif.channelSlug !== "publication"
-                            ? `t/${notif.channelSlug}`
-                            : "publication"}
+                          {notif.channelSlug &&
+                          notif.channelSlug !== "publication" &&
+                          notif.channelSlug !== "author"
+                            ? notif.channelSlug
+                            : "TechPeppy"}
                         </span>
                       </span>
-                      <span
-                        suppressHydrationWarning
-                        className="font-mono text-[10px] text-[#64748B] tabular-nums"
-                      >
+                      <span aria-hidden>·</span>
+                      <span suppressHydrationWarning className="tabular-nums">
                         {formatRelativeTime(notif.createdAt)}
                       </span>
                     </div>
                   </div>
 
-                  {/* Unread Dot */}
                   {!notif.isRead && (
                     <span
                       title="Unread"
-                      className="mt-1.5 h-2 w-2 rounded-full bg-[#10B981] shrink-0"
+                      className="mt-1.5 h-2 w-2 rounded-full bg-[#0F766E] shrink-0"
                     />
                   )}
                 </button>

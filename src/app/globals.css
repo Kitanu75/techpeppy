@@ -1,47 +1,34 @@
 @import "tailwindcss";
 
 :root {
-  /* === TECHPEPPY EDITORIAL PRECISION SYSTEM === */
+  /* === TECHPEPPY BOLD CONTRAST MEDIA DESIGN SYSTEM === */
 
-  /* Canvas & Surfaces (Crisp Cool Slate/Zinc) */
-  --bg-canvas: #F8FAFC;
-  --bg-card: #FFFFFF;
-  --bg-card-hover: #FFFFFF;
-  --bg-subtle: #F1F5F9;
-  --bg-muted: #E2E8F0;
+  /* Contrast Hero & Masthead (Matte Neutral Graphite) */
+  --surface-dark: #111315;
+  --surface-dark-elevated: #191C20;
+  --border-dark: #272A30;
+  --ink-on-dark: #FAFAFA;
+  --ink-on-dark-muted: #A1A1AA;
 
-  /* Typography */
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-muted: #64748B;
-  --text-dim: #94A3B8;
+  /* Crisp Light Reading & Story Grid */
+  --bg-page: #FFFFFF;
+  --bg-subtle: #F4F4F5;
+  --border-light: #E4E4E7;
+  --border-strong: #D4D4D8;
 
-  /* Unified Crisp Emerald Accent */
-  --accent: #10B981;
-  --accent-hover: #059669;
-  --accent-light: #ECFDF5;
-  --accent-glow: rgba(16, 185, 129, 0.12);
+  /* High-Contrast Ink Hierarchy */
+  --ink-primary: #111315;
+  --ink-secondary: #52525B;
+  --ink-muted: #71717A;
 
-  /* Primary Action Button */
-  --btn-primary: #0F172A;
-  --btn-primary-hover: #1E293B;
-  --btn-primary-text: #FFFFFF;
-
-  /* Hairline Structural Borders */
-  --border: #E2E8F0;
-  --border-hover: #CBD5E1;
-  --border-accent: rgba(16, 185, 129, 0.35);
+  /* Restrained Deep Teal Brand Accent */
+  --accent: #0F766E;
+  --accent-hover: #115E59;
+  --accent-tint: #F0FDFA;
+  --accent-on-dark: #2DD4BF;
 
   /* Semantic */
-  --success: #10B981;
   --danger: #DC2626;
-  --warning: #D97706;
-  --info: #2563EB;
-
-  /* Motion */
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --duration-fast: 150ms;
-  --duration-normal: 220ms;
 }
 
 html {
@@ -49,69 +36,72 @@ html {
 }
 
 body {
-  background-color: var(--bg-canvas);
-  color: var(--text-primary);
-  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-page);
+  color: var(--ink-primary);
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;
 }
 
+.font-display {
+  font-family: var(--font-display), var(--font-inter), -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
 
-/* === MINIMAL SCROLLBAR === */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* === CRISP NEUTRAL SCROLLBAR === */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--bg-subtle);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
+  background: #D4D4D8;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: #A1A1AA;
 }
 
-/* === SMOOTH TRANSITIONS === */
-* {
-  transition-property: color, background-color, border-color, opacity, box-shadow, transform;
-  transition-duration: var(--duration-fast);
-  transition-timing-function: var(--ease-out);
-}
-
-/* === CARD SHADOWS === */
-.shadow-card {
-  box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.03), 0 1px 1px -1px rgba(15, 23, 42, 0.02);
-}
-
-.shadow-card-hover {
-  box-shadow: 0 6px 16px -4px rgba(15, 23, 42, 0.06), 0 2px 6px -2px rgba(15, 23, 42, 0.04);
-}
-
-/* === SKELETON LOADING === */
+/* === SKELETON SHIMMER (LIGHT & DARK) === */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
 
 .skeleton-pulse {
-  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+  background: linear-gradient(90deg, #F4F4F5 25%, #E4E4E7 50%, #F4F4F5 75%);
   background-size: 200% 100%;
-  animation: shimmer 1.8s ease-in-out infinite;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+.skeleton-pulse-dark {
+  background: linear-gradient(90deg, #191C20 25%, #272A30 50%, #191C20 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
 }
 
 /* === FOCUS RING === */
 *:focus-visible {
-  outline: 2px solid var(--text-primary);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 6px;
 }
